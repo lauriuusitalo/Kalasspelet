@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Olivia och Födelsedagskalaset</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;background:#0e0a18;font-family:"Trebuchet MS","Segoe UI",sans-serif;overflow:hidden;}
+  #wrap{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
+  #game{background:#000;display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;touch-action:none;}
+  #hud{position:absolute;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;color:#fff;font-size:14px;z-index:5;gap:8px;}
+  .panel{background:rgba(20,12,40,.78);border:2px solid rgba(255,255,255,.28);border-radius:12px;padding:8px 12px;backdrop-filter:blur(4px);}
+  #clock{font-size:20px;font-weight:bold;text-align:center;}
+  #clock small{font-size:12px;font-weight:normal;opacity:.85;}
+  #listPanel{max-width:48%;}
+  #listPanel h4{font-size:12px;opacity:.85;margin-bottom:4px;letter-spacing:.5px;}
+  #listItems{display:flex;flex-direction:column;gap:2px;font-size:13px;}
+  .li-done{text-decoration:line-through;opacity:.5;}
+  #touch{position:absolute;inset:0;z-index:6;display:none;pointer-events:none;}
+  #dpad{position:absolute;left:18px;bottom:22px;width:150px;height:150px;pointer-events:auto;}
+  #dpad button{position:absolute;width:50px;height:50px;border:none;border-radius:12px;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.35);color:#fff;font-size:22px;}
+  #dpad .up{left:50px;top:0}#dpad .down{left:50px;top:100px}#dpad .left{left:0;top:50px}#dpad .right{left:100px;top:50px}
+  #actBtn{position:absolute;right:24px;bottom:40px;width:96px;height:96px;border-radius:50%;background:rgba(120,90,220,.72);border:3px solid rgba(255,255,255,.5);color:#fff;font-size:15px;font-weight:bold;pointer-events:auto;}
+  .overlay{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;}
+  #menu{background:radial-gradient(circle at 50% 28%,#3c2566,#120c22);color:#fff;}
+  #menu h1{font-size:clamp(28px,7vw,54px);margin-bottom:6px;line-height:1.05;text-shadow:3px 3px 0 #000;background:linear-gradient(#ffd86b,#ff9ad1);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  #menu .sub{font-size:16px;opacity:.85;margin-bottom:24px;max-width:540px;}
+  .btn{display:block;min-width:240px;margin:8px auto;padding:14px 20px;font-size:18px;font-weight:bold;border:none;border-radius:14px;cursor:pointer;color:#1a1228;background:linear-gradient(#ffe27a,#ffba49);box-shadow:0 4px 0 #b97e10;transition:transform .05s;}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b97e10;}
+  .btn.alt{background:linear-gradient(#a78bfa,#7c5cf0);color:#fff;box-shadow:0 4px 0 #4b2c9a;}
+  .card{background:rgba(18,12,34,.94);border:2px solid rgba(255,255,255,.3);border-radius:18px;padding:22px;max-width:560px;color:#fff;}
+  .card h2{margin-bottom:10px;color:#ffd86b;}
+  .card p{font-size:15px;line-height:1.5;margin-bottom:8px;}
+  .hidden{display:none!important;}
+  #dialog{justify-content:flex-end;padding-bottom:30px;background:transparent;pointer-events:none;}
+  #dialogBox{pointer-events:auto;}
+  .shopItem{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 14px;margin:8px 0;}
+  .shopItem .info{text-align:left;}
+  .swatch{width:34px;height:34px;border-radius:8px;display:inline-block;vertical-align:middle;margin-right:8px;image-rendering:pixelated;}
+  .buyBtn{padding:8px 14px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;background:linear-gradient(#9be37a,#4fae3c);color:#073;box-shadow:0 3px 0 #2e7a22;}
+  .buyBtn.owned{background:#555;color:#bbb;box-shadow:none;cursor:default;}
+  #coins{color:#ffe27a;font-weight:bold;}
+  #hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(20,12,40,.82);color:#fff;padding:6px 14px;border-radius:20px;font-size:14px;border:2px solid rgba(255,255,255,.25);display:none;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="800" height="448"></canvas>
+
+  <div id="hud" class="hidden">
+    <div class="panel" id="clock"><span id="clockTime">07:00</span><br><small id="timeLeft">15:00 kvar</small></div>
+    <div class="panel" id="listPanel">
+      <h4>🎀 MAMMAS LISTA</h4>
+      <div id="listItems"></div>
+      <div style="margin-top:4px;font-size:12px;">💰 <span id="coins">90</span> mynt</div>
+    </div>
+  </div>
+
+  <div id="hint"></div>
+
+  <div id="touch">
+    <div id="dpad">
+      <button class="up" data-k="ArrowUp">▲</button>
+      <button class="down" data-k="ArrowDown">▼</button>
+      <button class="left" data-k="ArrowLeft">◀</button>
+      <button class="right" data-k="ArrowRight">▶</button>
+    </div>
+    <button id="actBtn">OK</button>
+  </div>
+
+  <div id="menu" class="overlay">
+    <h1>Olivia &amp;<br>Födelsedagskalaset</h1>
+    <div class="sub">Ett pixeläventyr — hjälp Olivia handla allt på listan innan affärerna stänger! Pengarna räcker inte… du måste tjäna mer genom att hitta mynt och hjälpa folk i stan. Du har bara 7 minuter!</div>
+    <button class="btn" id="btnStart">▶ Starta spel</button>
+    <button class="btn alt" id="btnHow">📖 Instruktioner</button>
+    <button class="btn alt" id="btnStory">✨ Berättelsen</button>
+  </div>
+
+  <div id="howto" class="overlay hidden">
+    <div class="card">
+      <h2>📖 Så spelar du</h2>
+      <p>🕹️ Gå med <b>piltangenterna</b> (eller pilknapparna på mobil).</p>
+      <p>⭐ Tryck <b>mellanslag</b> (eller OK) för att prata med folk och gå in i affärer.</p>
+      <p>🗺️ Gå mot vänster/höger kant för att resa mellan stadens 5 platser.</p>
+      <p>🛒 I varje affär kan du köpa olika saker. Köp det som står på <b>Mammas lista</b> (★).</p>
+      <p>💰 <b>Pengarna räcker inte!</b> Plocka guldmynt som glittrar i världen och hjälp folk med små uppdrag för att tjäna mer.</p>
+      <p>🐱 Tips: Granne Stina har tappat bort sin katt, och Bagaren behöver hjälp med en leverans. Båda ger 30 mynt!</p>
+      <p>⏰ Du har bara <b>7 riktiga minuter</b>. Klockan går från morgon mot kväll — hinner du inte stänger affärerna!</p>
+      <p>🏠 När du har allt: spring hem och prata med mamma.</p>
+      <button class="btn" data-close="howto">Tillbaka</button>
+    </div>
+  </div>
+
+  <div id="storyView" class="overlay hidden">
+    <div class="card">
+      <h2>✨ Berättelsen</h2>
+      <p>Ikväll är det stort födelsedagskalas för Olivias bästa vän!</p>
+      <p>Mamma har skrivit en lista med allt som behövs: en festklänning, en tårta, godispåsar, en present och ballonger.</p>
+      <p>Men mamma har bara 90 mynt — och allt på listan kostar mer än så! Olivia måste plocka glittrande guldmynt och hjälpa stadens invånare med små uppdrag för att tjäna ihop resten.</p>
+      <p>Affärerna stänger när kvällen kommer, och tiden är knapp — bara 7 minuter. Spring runt, prata med folk, lös uppdragen och handla allt i tid — annars blir kalaset inställt och gästerna ledsna. Klarar du det blir det stadens bästa fest! 🎉</p>
+      <button class="btn" data-close="storyView">Tillbaka</button>
+    </div>
+  </div>
+
+  <div id="dialog" class="overlay hidden">
+    <div class="card" id="dialogBox" style="max-width:660px;">
+      <h2 id="dlgName">Mamma</h2>
+      <p id="dlgText"></p>
+      <button class="btn" id="dlgOk">OK ⭐</button>
+    </div>
+  </div>
+
+  <div id="shop" class="overlay hidden">
+    <div class="card" id="shopBox">
+      <h2 id="shopName">Affär</h2>
+      <p id="shopDesc" style="opacity:.85;font-size:14px;"></p>
+      <div id="shopItems"></div>
+      <button class="btn alt" id="shopClose">Lämna affären</button>
+    </div>
+  </div>
+
+  <div id="endView" class="overlay hidden">
+    <div class="card" id="endBox">
+      <h2 id="endTitle"></h2>
+      <canvas id="endCanvas" width="320" height="160" style="image-rendering:pixelated;width:320px;max-width:90%;border-radius:10px;margin:8px 0;"></canvas>
+      <p id="endText"></p>
+      <button class="btn" id="btnAgain">🔁 Spela igen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const cv=document.getElementById('game');
+const ctx=cv.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+const TS=32, COLS=25, ROWS=14, W=COLS*TS, H=ROWS*TS;
+
+// ===================== STATE =====================
+const TOTAL_TIME=7*60;
+let state='menu';
+let timeLeft=TOTAL_TIME, lastTs=0, coins=90, sceneIndex=0;
+const quests={cat:'none',bread:'none'};
+const coinsTaken={};
+const catEntity={scene:3,x:18*TS,y:12*TS};
+// guldmynt utspridda i världen (6 mynt á 6 mynt). Räcker EJ till listan utan sidouppdrag.
+const worldCoins=[
+  [{c:20,r:12}],
+  [{c:22,r:12}],
+  [{c:18,r:12}],
+  [{c:6,r:12},{c:22,r:11}],
+  [{c:20,r:12}],
+];
+let now=0; // animation time
+const keys={};
+let interactTarget=null;
+
+const list=[
+  {id:'klanning',label:'👗 Festklänning',got:false},
+  {id:'tarta',label:'🎂 Tårta',got:false},
+  {id:'godis',label:'🍬 Godispåsar',got:false},
+  {id:'present',label:'🎁 Present',got:false},
+  {id:'ballong',label:'🎈 Ballonger',got:false},
+];
+const owned={};
+let notifiedDone=false;
+
+const player={x:8*TS,y:9*TS,speed:1.9,dir:'down',moving:false,step:0};
+
+// ===================== PIXEL SPRITES =====================
+// 12 wide x 16 tall character matrices
+const M_DOWN=[
+"....HHHH....","..HHHHHHHH..",".HHHHHHHHHH.",".HHSSSSSSHH.",
+".HSSSSSSSSH.",".HSESSSSESH.",".HSSSSSSSSH.",".HSSSmmSSSH.",
+"..SSSSSSSS..","..DDDDDDDD..",".SDDDDDDDDS.",".SDDDDDDDDS.",
+"..DDDDDDDD..","..DDDDDDDD..","...LL..LL...","...BB..BB..."];
+const M_DOWN_B=[
+"....HHHH....","..HHHHHHHH..",".HHHHHHHHHH.",".HHSSSSSSHH.",
+".HSSSSSSSSH.",".HSESSSSESH.",".HSSSSSSSSH.",".HSSSmmSSSH.",
+"..SSSSSSSS..","..DDDDDDDD..",".SDDDDDDDDS.",".SDDDDDDDDS.",
+"..DDDDDDDD..","..DDDDDDDD..","..LL....LL..","..BB....BB.."];
+const M_UP=[
+"....HHHH....","..HHHHHHHH..",".HHHHHHHHHH.",".HHHHHHHHHH.",
+".HHHHHHHHHH.",".HHHHHHHHHH.",".HHHHHHHHHH.",".HHHHHHHHHH.",
+"..HHHHHHHH..","..DDDDDDDD..",".SDDDDDDDDS.",".SDDDDDDDDS.",
+"..DDDDDDDD..","..DDDDDDDD..","...LL..LL...","...BB..BB..."];
+const M_UP_B=[
+"....HHHH....","..HHHHHHHH..",".HHHHHHHHHH.",".HHHHHHHHHH.",
+".HHHHHHHHHH.",".HHHHHHHHHH.",".HHHHHHHHHH.",".HHHHHHHHHH.",
+"..HHHHHHHH..","..DDDDDDDD..",".SDDDDDDDDS.",".SDDDDDDDDS.",
+"..DDDDDDDD..","..DDDDDDDD..","..LL....LL..","..BB....BB.."];
+const M_SIDE=[
+"....HHHH....","..HHHHHHHH..",".HHHHHHHHHH.",".HHHSSSSSS..",
+".HHHSSSESS..",".HHHSSSSSS..",".HHHSSmSSS..","..HHSSSSS...",
+"..SSSSSSSS..","..DDDDDDDD..","..DDDDDDDDS.","..DDDDDDDDS.",
+"..DDDDDDDD..","..DDDDDDDD..","...LLLL.....","...BBBB....."];
+const M_SIDE_B=[
+"....HHHH....","..HHHHHHHH..",".HHHHHHHHHH.",".HHHSSSSSS..",
+".HHHSSSESS..",".HHHSSSSSS..",".HHHSSmSSS..","..HHSSSSS...",
+"..SSSSSSSS..","..DDDDDDDD..","..DDDDDDDDS.","..DDDDDDDDS.",
+"..DDDDDDDD..","..DDDDDDDD..","..LL..LL....","..BB..BB...."];
+
+function pal(H,h,D,d,B,S){return {H,h,S:S||'#f4cba2',s:'#e0ad82',E:'#2a1a12',m:'#c0504a',D,d,L:'#efe9da',B,'.':null};}
+const PAL={
+  olivia: pal('#8a4b1e','#6a3815','#ef72a8','#cc4f86','#e03b2c'),
+  mamma:  pal('#4a3326','#34241a','#8a63e8','#6a45c0','#5b3f9c'),
+  granne: pal('#b8742a','#94591c','#3fa46d','#2c7d50','#7a5230'),
+  keeper: pal('#6a4a2a','#4a3318','#e0a23c','#b87d1f','#5b3f1c'),
+  boy:    pal('#5a3a1e','#3f2914','#3f7fd0','#2c5ea0','#333333'),
+  girl:   pal('#c98a3a','#a06a22','#ef6a4a','#c84d33','#7a3f2a'),
+  baker:  pal('#9a9a9a','#777777','#ececec','#c8c8c8','#666666'),
+  host:   pal('#d04a8a','#a83468','#f0c040','#c89a20','#d04a4a'),
+};
+
+function spr(mat,p,x,y,s,flip){
+  for(let r=0;r<mat.length;r++){const row=mat[r];
+    for(let c=0;c<row.length;c++){
+      const ch=flip?row[row.length-1-c]:row[c];const col=p[ch];
+      if(col){ctx.fillStyle=col;ctx.fillRect((x+c*s)|0,(y+r*s)|0,s,s);}
+    }}
+}
+// draw character: feet at (fx,fy)
+function drawChar(p,dir,moving,step,fx,fy){
+  const s=3, w=12*s, h=16*s;
+  const bob=moving?(Math.floor(step)%2?-2:0):0;
+  let mat, flip=false;
+  const f=Math.floor(step)%2===1;
+  if(dir==='down') mat= (moving&&f)?M_DOWN_B:M_DOWN;
+  else if(dir==='up') mat=(moving&&f)?M_UP_B:M_UP;
+  else { mat=(moving&&f)?M_SIDE_B:M_SIDE; flip=(dir==='left'); }
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,.22)';
+  ctx.beginPath();ctx.ellipse(fx,fy-2,15,5,0,0,7);ctx.fill();
+  spr(mat,p,fx-w/2,fy-h+bob,s,flip);
+}
+
+// ===================== SCENES =====================
+function rnd(seed){let s=seed%2147483647;if(s<=0)s+=2147483646;return ()=>(s=s*16807%2147483647)/2147483647;}
+function hash(x,y){let n=(x*374761393+y*668265263)|0;n=(n^(n>>13))*1274126177;return ((n^(n>>16))>>>0)/4294967295;}
+
+// shops
+const shops={
+ klader:{name:'👗 Klädbutiken',desc:'Fina kläder till festen!',items:[
+   {id:'klanning',name:'Festklänning',price:35,listId:'klanning',col:'#ef72a8'},
+   {id:'hatt',name:'Fin hatt',price:20,col:'#5b8def'},
+   {id:'skor',name:'Glittriga skor',price:25,col:'#f0c040'}]},
+ mat:{name:'🛒 Mataffären',desc:'Tårta, godis och annat gott.',items:[
+   {id:'tarta',name:'Födelsedagstårta',price:40,listId:'tarta',col:'#f6b5cf'},
+   {id:'godis',name:'Godispåsar',price:20,listId:'godis',col:'#e85a8a'},
+   {id:'frukt',name:'Fruktkorg',price:15,col:'#e0532e'}]},
+ leksak:{name:'🧸 Leksaksaffären',desc:'Den perfekta presenten.',items:[
+   {id:'present',name:'Present',price:30,listId:'present',col:'#e03b2c'},
+   {id:'spel',name:'Tv-spel',price:35,col:'#3a3a55'},
+   {id:'nalle',name:'Mjukis-nalle',price:18,col:'#b07a3a'}]},
+ fest:{name:'🎈 Festbutiken',desc:'Allt för det perfekta kalaset!',items:[
+   {id:'ballong',name:'Ballonger',price:15,listId:'ballong',col:'#e0532e'},
+   {id:'serpentin',name:'Serpentiner',price:12,col:'#3fa46d'},
+   {id:'ljus',name:'Tårtljus',price:8,col:'#f0c040'}]},
+};
+
+// Scene definitions
+const scenes=[
+ { name:'Olivias kvarter', seed:11, grass1:'#5aa84a',grass2:'#4f9b41',path:'#caa66a',flower:'#ef72a8',terrain:'garden',
+   houses:[
+     {tx:3,ty:2,tw:5,th:4,wall:'#e7c08a',roof:'#c0392b',name:'Hemmet'},
+     {tx:15,ty:2,tw:4,th:3,wall:'#bcd6e8',roof:'#2e6da4',name:'Granne'},
+     {tx:20,ty:5,tw:4,th:3,wall:'#d8c0e0',roof:'#7c4dd6',name:'Granne'} ],
+   npcs:[
+     {x:10*TS,y:10*TS,pal:'mamma',name:'Mamma',dir:'down',win:true,
+      line:'Olivia! Ikväll är det kalas. 🎉 På listan: festklänning, tårta, godispåsar, present och ballonger. Men jag kunde bara ge dig 90 mynt — det räcker inte till allt! Plocka mynt på vägen och hjälp folk i stan för att tjäna mer. Affärerna stänger snart — du har 7 minuter! Spring sen hem till mig.'},
+     {x:17*TS,y:9*TS,pal:'granne',name:'Granne Stina',dir:'left',
+      line:'Hej Olivia! Klädbutiken ligger borta på Stora torget, åt höger. Lycka till! 👋'} ] },
+
+ { name:'Stora torget', seed:23, grass1:'#67ab53',grass2:'#5c9e49',path:'#b8b2a0',flower:'#ffd24a',terrain:'plaza',
+   pond:{tx:10,ty:8,tw:5,th:3},
+   houses:[
+     {tx:3,ty:2,tw:5,th:4,wall:'#f0d6e6',roof:'#c0398f',name:'Klädbutik',shop:'klader'},
+     {tx:17,ty:2,tw:4,th:3,wall:'#d6e0c0',roof:'#4f8a2e',name:'Café'} ],
+   npcs:[
+     {x:7*TS,y:8*TS,pal:'keeper',name:'Butiksägare',dir:'down',
+      line:'Välkommen till klädbutiken! Vi har den finaste festklänningen i hela stan. Gå in genom dörren!'},
+     {x:19*TS,y:9*TS,pal:'boy',name:'Pojken Ali',dir:'down',
+      line:'Jag älskar kalas! Glöm inte ballongerna — de säljs i festbutiken längst bort. 🎈'} ] },
+
+ { name:'Marknadsgatan', seed:37, grass1:'#7bb44a',grass2:'#6fa83f',path:'#d2b074',flower:'#e0532e',terrain:'market',
+   houses:[
+     {tx:4,ty:2,tw:5,th:4,wall:'#f3d79a',roof:'#e8920c',name:'Mataffär',shop:'mat'},
+     {tx:16,ty:2,tw:4,th:3,wall:'#e8c8a0',roof:'#a8651c',name:'Bageri'} ],
+   npcs:[
+     {x:11*TS,y:8*TS,pal:'baker',name:'Bagaren',dir:'down',
+      line:'Doften av nybakat! Tårtan i mataffären är världens godaste. Missa inte godispåsarna heller!'},
+     {x:19*TS,y:10*TS,pal:'girl',name:'Vännen Maja',dir:'left',
+      line:'Hej Olivia! Spännande med kalaset i kväll. Skynda dig så hinner du allt! 😊'} ] },
+
+ { name:'Stadsparken', seed:53, grass1:'#4f9e44',grass2:'#458a3b',path:'#c2a86a',flower:'#5b8def',terrain:'park',
+   pond:{tx:14,ty:7,tw:6,th:4},
+   houses:[
+     {tx:3,ty:2,tw:5,th:4,wall:'#cfeaf0',roof:'#1f9e8a',name:'Leksaksaffär',shop:'leksak'} ],
+   npcs:[
+     {x:9*TS,y:9*TS,pal:'boy',name:'Pojken Noah',dir:'right',
+      line:'Leksaksaffären har de bästa presenterna! Jag fick en där till min födelsedag. 🎁'},
+     {x:12*TS,y:11*TS,pal:'girl',name:'Flickan Vera',dir:'down',
+      line:'Titta vilken fin damm! Anka simmar där. Glöm inte presenten till kalaset!'} ] },
+
+ { name:'Festtorget', seed:71, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b2d0',flower:'#ffd24a',terrain:'festival',
+   houses:[
+     {tx:4,ty:2,tw:5,th:4,wall:'#ffd0e8',roof:'#c0398f',name:'Festbutik',shop:'fest'},
+     {tx:17,ty:2,tw:4,th:3,wall:'#fff0c0',roof:'#e0a800',name:'Tält'} ],
+   npcs:[
+     {x:11*TS,y:9*TS,pal:'host',name:'Festfixaren',dir:'down',
+      line:'Ballonger, serpentiner och ljus — allt för festen finns här inne! Ha det så kul i kväll! 🎊'} ] },
+];
+
+// build terrain + collision per scene (cached)
+const built=[];
+function buildScene(i){
+  if(built[i]) return built[i];
+  const sc=scenes[i];
+  const grid=[]; const blocked=[]; const trees=[]; const flowers=[]; const bushes=[];
+  const R=rnd(sc.seed);
+  for(let r=0;r<ROWS;r++){grid[r]=[];blocked[r]=[];for(let c=0;c<COLS;c++){grid[r][c]='G';blocked[r][c]=false;}}
+  // horizontal walking path (street)
+  for(let c=0;c<COLS;c++){grid[9][c]='P';grid[10][c]='P';}
+  // pond
+  if(sc.pond){const p=sc.pond;for(let r=p.ty;r<p.ty+p.th;r++)for(let c=p.tx;c<p.tx+p.tw;c++){if(r<ROWS&&c<COLS){grid[r][c]='W';blocked[r][c]=true;}}}
+  // plaza stone area for town
+  if(sc.terrain==='plaza'){for(let r=7;r<12;r++)for(let c=4;c<21;c++)if(grid[r][c]==='G')grid[r][c]='S';}
+  // houses footprint blocked (door open)
+  sc.houses.forEach(h=>{
+    h.doorCol=h.tx+Math.floor(h.tw/2); h.doorRow=h.ty+h.th-1;
+    for(let r=h.ty;r<h.ty+h.th;r++)for(let c=h.tx;c<h.tx+h.tw;c++){
+      if(r<ROWS&&c<COLS){ if(!(c===h.doorCol&&r===h.doorRow)) blocked[r][c]=true; }
+    }
+    h.doorX=h.doorCol*TS+TS/2; h.doorY=(h.doorRow+1)*TS;
+  });
+  // trees: border line top + scattered
+  function addTree(c,r){ if(r<0||r>=ROWS||c<0||c>=COLS)return; if(grid[r][c]!=='G')return; if(r>=9&&r<=10)return;
+    blocked[r][c]=true; trees.push({c,r}); }
+  for(let c=0;c<COLS;c+=2) addTree(c,0);
+  const tdens= sc.terrain==='park'?14:6;
+  for(let k=0;k<tdens;k++){addTree(2+Math.floor(R()*(COLS-4)),5+Math.floor(R()*4));}
+  // bushes
+  for(let k=0;k<8;k++){const c=Math.floor(R()*COLS),r=11+Math.floor(R()*3);if(grid[r]&&grid[r][c]==='G'&&!blocked[r][c]){bushes.push({c,r});}}
+  // flowers (deco, not blocked)
+  for(let k=0;k<26;k++){const c=Math.floor(R()*COLS),r=4+Math.floor(R()*(ROWS-4));if(grid[r][c]==='G'&&!blocked[r][c]&&!(r>=9&&r<=10)){flowers.push({c,r});}}
+  built[i]={grid,blocked,trees,flowers,bushes};
+  return built[i];
+}
+
+// ===================== TILE DRAW =====================
+function drawTile(code,sc,c,r){
+  const x=c*TS,y=r*TS;
+  if(code==='G'){
+    ctx.fillStyle=((c+r)&1)?sc.grass1:sc.grass2; ctx.fillRect(x,y,TS,TS);
+    const hv=hash(c,r);
+    ctx.fillStyle='rgba(0,0,0,.10)';
+    if(hv>0.7){ctx.fillRect(x+ (hv*20|0),y+8,3,7);ctx.fillRect(x+4,y+18,3,7);}
+    if(hv<0.3){ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(x+18,y+6,5,3);}
+  } else if(code==='P'){
+    ctx.fillStyle=sc.path; ctx.fillRect(x,y,TS,TS);
+    ctx.fillStyle='rgba(0,0,0,.08)';
+    const hv=hash(c,r);
+    ctx.fillRect(x+(hv*22|0),y+(hv*22|0),4,4);ctx.fillRect(x+20,y+10,3,3);
+    ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(x+6,y+22,4,2);
+  } else if(code==='S'){
+    ctx.fillStyle='#bcb6a4'; ctx.fillRect(x,y,TS,TS);
+    ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,TS-1,TS-1);
+    ctx.fillStyle='rgba(255,255,255,.10)';ctx.fillRect(x+3,y+3,TS-6,3);
+  } else if(code==='W'){
+    ctx.fillStyle='#2f6fb0'; ctx.fillRect(x,y,TS,TS);
+    ctx.fillStyle='#4f8fce';
+    const o=Math.sin(now*2+c+r)*4;
+    ctx.fillRect(x+4,y+8+o,12,3); ctx.fillRect(x+16,y+20-o,10,3);
+    ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(x+6,y+9+o,5,1);
+  }
+}
+
+function drawTree(c,r){
+  const x=c*TS,y=r*TS;
+  // trunk
+  ctx.fillStyle='#6b4423';ctx.fillRect(x+TS/2-4,y+TS-14,8,16);
+  ctx.fillStyle='#5a3618';ctx.fillRect(x+TS/2-4,y+TS-14,3,16);
+  // canopy blocks
+  const cx=x+TS/2, cy=y+TS/2-2;
+  ctx.fillStyle='#2f7d2f';
+  ctx.fillRect(cx-16,cy-14,32,24);ctx.fillRect(cx-12,cy-20,24,10);ctx.fillRect(cx-20,cy-6,40,12);
+  ctx.fillStyle='#3a942f';
+  ctx.fillRect(cx-12,cy-12,20,16);ctx.fillRect(cx-8,cy-18,14,8);
+  ctx.fillStyle='#52ad3c';
+  ctx.fillRect(cx-8,cy-10,9,9);ctx.fillStyle='rgba(255,255,255,.15)';ctx.fillRect(cx-6,cy-8,4,3);
+}
+function drawBush(c,r){
+  const x=c*TS,y=r*TS;
+  ctx.fillStyle='#2f7d2f';ctx.fillRect(x+3,y+12,26,16);
+  ctx.fillStyle='#3a942f';ctx.fillRect(x+6,y+9,18,12);
+  ctx.fillStyle='#52ad3c';ctx.fillRect(x+9,y+11,8,6);
+}
+function drawFlower(c,r,col){
+  const x=c*TS+TS/2,y=r*TS+TS/2;
+  ctx.fillStyle='#2e7d2e';ctx.fillRect(x-1,y,2,8);
+  ctx.fillStyle=col;ctx.fillRect(x-4,y-5,3,3);ctx.fillRect(x+1,y-5,3,3);ctx.fillRect(x-4,y-1,3,3);ctx.fillRect(x+1,y-1,3,3);
+  ctx.fillStyle='#ffe27a';ctx.fillRect(x-1,y-2,2,2);
+}
+
+function drawCat(x,y){
+  const b=Math.sin(now*4)*1;
+  ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(x,y,9,3,0,0,7);ctx.fill();
+  ctx.fillStyle='#e08a2e';ctx.fillRect(x-8,y-12+b,16,10); // body
+  ctx.fillRect(x-10,y-16+b,9,8); // head
+  ctx.fillStyle='#c8731f';ctx.fillRect(x-10,y-19+b,2,4);ctx.fillRect(x-5,y-19+b,2,4); // ears
+  ctx.fillStyle='#2a1a12';ctx.fillRect(x-8,y-14+b,1,1);ctx.fillRect(x-4,y-14+b,1,1); // eyes
+  ctx.fillStyle='#e08a2e';ctx.fillRect(x+7,y-14+b,3,2);ctx.fillRect(x+9,y-18+b,2,5); // tail
+  ctx.fillStyle='#f4a94e';ctx.fillRect(x-6,y-10+b,4,3);
+}
+function drawCoin(x,y){
+  const b=Math.sin(now*3+x)*2;
+  ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.ellipse(x,y+8,7,3,0,0,7);ctx.fill();
+  ctx.fillStyle='#caa11e';ctx.beginPath();ctx.ellipse(x,y+b,6,8,0,0,7);ctx.fill();
+  ctx.fillStyle='#ffd84a';ctx.beginPath();ctx.ellipse(x,y+b,4,6,0,0,7);ctx.fill();
+  ctx.fillStyle='#fff2a8';ctx.fillRect(x-1,y-3+b,2,6);
+}
+function drawHouse(h){
+  const x=h.tx*TS, y=h.ty*TS, w=h.tw*TS, hh=h.th*TS;
+  const wallTop=y+hh*0.42;
+  // wall
+  ctx.fillStyle=h.wall; ctx.fillRect(x,wallTop,w,y+hh-wallTop);
+  // brick lines
+  ctx.fillStyle='rgba(0,0,0,.08)';
+  for(let yy=wallTop+10;yy<y+hh;yy+=10) ctx.fillRect(x,yy,w,1);
+  // roof (trapezoid)
+  ctx.fillStyle=h.roof;
+  ctx.beginPath();ctx.moveTo(x-6,wallTop);ctx.lineTo(x+w*0.18,y);ctx.lineTo(x+w*0.82,y);ctx.lineTo(x+w+6,wallTop);ctx.closePath();ctx.fill();
+  // shingle lines
+  ctx.strokeStyle='rgba(0,0,0,.18)';ctx.lineWidth=1;
+  for(let i=1;i<4;i++){const yy=y+(wallTop-y)*i/4;ctx.beginPath();ctx.moveTo(x-6+ (i*3),yy);ctx.lineTo(x+w+6-(i*3),yy);ctx.stroke();}
+  ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(x+w*0.18,y+2,w*0.64,2);
+  // door
+  const dx=h.doorCol*TS+4, dw=TS-8, dy=y+hh-TS+4, dh=TS-4;
+  ctx.fillStyle='#6b4423';ctx.fillRect(dx,dy,dw,dh);
+  ctx.fillStyle='#5a3618';ctx.fillRect(dx,dy,dw,3);
+  ctx.fillStyle='#ffd86b';ctx.fillRect(dx+dw-6,dy+dh/2,3,3);
+  // windows
+  ctx.fillStyle='#bfe3ff';
+  const wy=wallTop+8;
+  ctx.fillRect(x+8,wy,14,14); ctx.fillRect(x+w-22,wy,14,14);
+  ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=1;
+  ctx.strokeRect(x+8,wy,14,14);ctx.strokeRect(x+w-22,wy,14,14);
+  ctx.beginPath();ctx.moveTo(x+15,wy);ctx.lineTo(x+15,wy+14);ctx.moveTo(x+8,wy+7);ctx.lineTo(x+22,wy+7);
+  ctx.moveTo(x+w-15,wy);ctx.lineTo(x+w-15,wy+14);ctx.moveTo(x+w-22,wy+7);ctx.lineTo(x+w-8,wy+7);ctx.stroke();
+  // sign
+  const sw=Math.max(78,h.name.length*8+16);
+  ctx.fillStyle='#3a2614';ctx.fillRect(x+w/2-sw/2, wallTop-18, sw,16);
+  ctx.fillStyle='#f5e2b8';ctx.font='bold 12px Trebuchet MS';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(h.name, x+w/2, wallTop-10);
+}
+
+// ===================== RENDER =====================
+function draw(){
+  const sc=scenes[sceneIndex];
+  const B=buildScene(sceneIndex);
+  // terrain
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) drawTile(B.grid[r][c],sc,c,r);
+  // flowers & bushes (ground deco)
+  B.flowers.forEach(f=>drawFlower(f.c,f.r,sc.flower));
+  B.bushes.forEach(b=>drawBush(b.c,b.r));
+  // world coins
+  (worldCoins[sceneIndex]||[]).forEach((co,idx)=>{ if(coinsTaken[sceneIndex+'_'+idx])return;
+    drawCoin(co.c*TS+TS/2,co.r*TS+TS/2);});
+  // lost cat in the park (before found)
+  if(sceneIndex===catEntity.scene && (quests.cat==='none'||quests.cat==='active'))
+    drawCat(catEntity.x,catEntity.y);
+  // depth-sorted: houses, trees, npcs, player by baseline Y
+  const ents=[];
+  sc.houses.forEach(h=>ents.push({y:(h.ty+h.th)*TS,draw:()=>drawHouse(h)}));
+  B.trees.forEach(t=>ents.push({y:(t.r+1)*TS,draw:()=>drawTree(t.c,t.r)}));
+  sc.npcs.forEach(n=>ents.push({y:n.y,draw:()=>drawChar(PAL[n.pal],n.dir,false,0,n.x,n.y)}));
+  ents.push({y:player.y,draw:()=>drawChar(PAL.olivia,player.dir,player.moving,player.step,player.x,player.y)});
+  ents.sort((a,b)=>a.y-b.y);
+  ents.forEach(e=>e.draw());
+  // cat follows Olivia once found
+  if(quests.cat==='found') drawCat(player.x-22,player.y-2);
+  // NPC name tags
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 11px Trebuchet MS';
+  sc.npcs.forEach(n=>{
+    ctx.fillStyle='rgba(20,12,40,.7)';const tw=n.name.length*6+10;
+    ctx.fillRect(n.x-tw/2,n.y-58,tw,14);
+    ctx.fillStyle='#fff';ctx.fillText(n.name,n.x,n.y-51);
+  });
+
+  // time-of-day tint
+  const frac=(state==='play'||state==='dialog'||state==='shop')?(1-timeLeft/TOTAL_TIME):0;
+  if(frac>0.25){ctx.fillStyle='rgba(255,150,50,'+(0.30*(frac-0.25)).toFixed(3)+')';ctx.fillRect(0,0,W,H);}
+  if(frac>0.6){ctx.fillStyle='rgba(40,30,95,'+(0.5*(frac-0.6)).toFixed(3)+')';ctx.fillRect(0,0,W,H);}
+
+  // scene banner + arrows
+  ctx.fillStyle='rgba(20,12,40,.7)';ctx.fillRect(W/2-120,6,240,24);
+  ctx.fillStyle='#fff';ctx.font='bold 14px Trebuchet MS';
+  ctx.fillText('📍 '+sc.name+'  ('+(sceneIndex+1)+'/'+scenes.length+')',W/2,18);
+  ctx.font='bold 22px Trebuchet MS';ctx.fillStyle='rgba(255,255,255,.85)';
+  if(sceneIndex<scenes.length-1)ctx.fillText('▶',W-16,H/2);
+  if(sceneIndex>0)ctx.fillText('◀',16,H/2);
+}
+
+// ===================== UPDATE =====================
+function blockedAt(px,py){
+  const B=buildScene(sceneIndex);
+  const c=Math.floor(px/TS), r=Math.floor(py/TS);
+  if(c<0||c>=COLS||r<0||r>=ROWS) return true;
+  return B.blocked[r][c];
+}
+function update(dt){
+  now+=dt;
+  if(state!=='play')return;
+  timeLeft-=dt;
+  if(timeLeft<=0){timeLeft=0;loseGame();return;}
+
+  let dx=0,dy=0;
+  if(keys['ArrowLeft']){dx-=1;player.dir='left';}
+  if(keys['ArrowRight']){dx+=1;player.dir='right';}
+  if(keys['ArrowUp']){dy-=1;player.dir='up';}
+  if(keys['ArrowDown']){dy+=1;player.dir='down';}
+  player.moving=!!(dx||dy);
+  if(player.moving){
+    const len=Math.hypot(dx,dy);const sp=player.speed*dt*60;
+    const nx=player.x+dx/len*sp, ny=player.y+dy/len*sp;
+    if(!blockedAt(nx,player.y)) player.x=nx;
+    if(!blockedAt(player.x,ny)) player.y=ny;
+    player.step+=dt*8;
+  }
+  // bounds & transitions
+  player.y=Math.max(2*TS,Math.min((ROWS)*TS-6,player.y));
+  if(player.x>W-10){ if(sceneIndex<scenes.length-1){sceneIndex++;player.x=14;} else player.x=W-10; }
+  if(player.x<8){ if(sceneIndex>0){sceneIndex--;player.x=W-16;} else player.x=8; }
+
+  // interaction detection
+  interactTarget=null;let best=1e9;
+  const sc=scenes[sceneIndex];
+  sc.houses.forEach(h=>{ if(!h.shop)return;
+    const d=Math.hypot(player.x-h.doorX,player.y-h.doorY);
+    if(d<46&&d<best){best=d;interactTarget={type:'shop',key:h.shop,name:h.name};}});
+  sc.npcs.forEach(n=>{
+    const d=Math.hypot(player.x-n.x,player.y-n.y);
+    if(d<48&&d<best){best=d;interactTarget={type:'npc',npc:n};}});
+  if(sceneIndex===catEntity.scene&&(quests.cat==='none'||quests.cat==='active')){
+    const d=Math.hypot(player.x-catEntity.x,player.y-catEntity.y);
+    if(d<48&&d<best){best=d;interactTarget={type:'cat'};}}
+
+  // pick up world coins
+  (worldCoins[sceneIndex]||[]).forEach((co,idx)=>{const key=sceneIndex+'_'+idx;if(coinsTaken[key])return;
+    const cx=co.c*TS+TS/2,cy=co.r*TS+TS/2;
+    if(Math.hypot(player.x-cx,player.y-cy)<22){coinsTaken[key]=true;addCoins(6);}});
+
+  const hint=document.getElementById('hint');
+  if(interactTarget){hint.style.display='block';
+    hint.textContent= interactTarget.type==='shop'?('⭐ Mellanslag: gå in i '+interactTarget.name)
+      :interactTarget.type==='cat'?'⭐ Mellanslag: klappa katten 🐱'
+      :'⭐ Mellanslag: prata med '+interactTarget.npc.name;
+  } else hint.style.display='none';
+
+  // clock
+  const cur=Math.floor(7*60+(20*60-7*60)*(1-timeLeft/TOTAL_TIME));
+  document.getElementById('clockTime').textContent=String(Math.floor(cur/60)).padStart(2,'0')+':'+String(cur%60).padStart(2,'0');
+  document.getElementById('timeLeft').textContent=fmt(timeLeft)+' kvar';
+}
+function fmt(s){s=Math.max(0,Math.floor(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+
+// ===================== ACTIONS =====================
+function addCoins(v){coins+=v;document.getElementById('coins').textContent=coins;}
+function handleAction(){
+  if(state==='dialog'){closeDialog();return;}
+  if(state!=='play'||!interactTarget)return;
+  if(interactTarget.type==='shop'){openShop(interactTarget.key);return;}
+  if(interactTarget.type==='cat'){
+    if(quests.cat==='active'){quests.cat='found';openDialog('Misse 🐱','Mjau! Du hittade Misse! Ta henne tillbaka till Granne Stina i Olivias kvarter (längst åt vänster).');}
+    else openDialog('Katt 🐱','En söt katt sitter och spinner. Kanske letar någon efter den?');
+    return;
+  }
+  questTalk(interactTarget.npc);
+}
+function questTalk(n){
+  if(n.win){ if(allGot())winGame();
+    else openDialog('Mamma','Du är inte klar än! 🛍️ Du saknar: '+list.filter(i=>!i.got).map(i=>i.label).join(', ')+'. Skynda dig!');
+    return; }
+  if(n.name==='Granne Stina'){
+    if(quests.cat==='none'){quests.cat='active';openDialog(n.name,'Åh nej! Min katt Misse har sprungit bort — jag tror hon är i Stadsparken (åt höger). Hittar du henne får du 30 mynt! 🐱');}
+    else if(quests.cat==='active')openDialog(n.name,'Har du hittat Misse än? Leta i Stadsparken!');
+    else if(quests.cat==='found'){quests.cat='done';addCoins(30);openDialog(n.name,'Misse! ❤️ Tack så mycket, Olivia! Här är 30 mynt som tack.');}
+    else openDialog(n.name,'Tack igen för att du räddade Misse! 🐱');
+    return;
+  }
+  if(n.name==='Bagaren'){
+    if(quests.bread==='none'){quests.bread='active';openDialog(n.name,'Perfekt att du kom! Kan du leverera det här nybakade brödet till Festfixaren på Festtorget (längst åt höger)? Du får 30 mynt! 🍞');}
+    else if(quests.bread==='active')openDialog(n.name,'Brödet är färskt — spring till Festtorget och ge det till Festfixaren!');
+    else openDialog(n.name,'Tack för leveransen! Tårtan finns i mataffären här bredvid.');
+    return;
+  }
+  if(n.name==='Festfixaren'&&quests.bread==='active'){
+    quests.bread='done';addCoins(30);openDialog(n.name,'Åh, färskt bröd från bagaren! Tack! 🍞 Här är 30 mynt för besväret.');
+    return;
+  }
+  openDialog(n.name,n.line);
+}
+let curShop=null;
+function openShop(key){curShop=shops[key];state='shop';
+  document.getElementById('shopName').textContent=curShop.name;
+  document.getElementById('shopDesc').textContent=curShop.desc;renderShop();show('shop');}
+function renderShop(){const box=document.getElementById('shopItems');box.innerHTML='';
+  curShop.items.forEach(it=>{const row=document.createElement('div');row.className='shopItem';
+    const own=owned[it.id];
+    row.innerHTML='<div class="info"><span class="swatch" style="background:'+it.col+'"></span><b>'+it.name+'</b>'+
+      (it.listId?' <span style="color:#ffd86b">★ på listan</span>':'')+
+      '<div style="font-size:13px;opacity:.8">💰 '+it.price+' mynt</div></div>';
+    const btn=document.createElement('button');btn.className='buyBtn'+(own?' owned':'');
+    btn.textContent=own?'✔ Köpt':'Köp';if(!own)btn.onclick=()=>buy(it);
+    row.appendChild(btn);box.appendChild(row);});}
+function buy(it){if(owned[it.id])return;
+  if(coins<it.price){openDialog('Affärsbiträde','Oj, du har inte råd med det just nu. 💰');return;}
+  coins-=it.price;owned[it.id]=true;
+  if(it.listId){const li=list.find(l=>l.id===it.listId);if(li)li.got=true;}
+  document.getElementById('coins').textContent=coins;renderList();renderShop();
+  if(allGot()&&!notifiedDone){notifiedDone=true;
+    setTimeout(()=>openDialog('💡 Tips','Du har allt på listan! Spring hem till mamma (åt vänster, plats 1) innan tiden tar slut! 🏠'),250);}}
+function closeShop(){hide('shop');state='play';}
+function renderList(){const c=document.getElementById('listItems');c.innerHTML='';
+  list.forEach(i=>{const d=document.createElement('div');d.className=i.got?'li-done':'';
+    d.textContent=(i.got?'✅ ':'⬜ ')+i.label;c.appendChild(d);});}
+function allGot(){return list.every(i=>i.got);}
+
+let prevState='play';
+function openDialog(name,text){prevState=state==='shop'?'play':state;state='dialog';
+  document.getElementById('dlgName').textContent=name;document.getElementById('dlgText').textContent=text;show('dialog');}
+function closeDialog(){hide('dialog');state='play';}
+
+// ===================== WIN / LOSE =====================
+function drawEndScene(win){
+  const ec=document.getElementById('endCanvas'),g=ec.getContext('2d');g.imageSmoothingEnabled=false;
+  g.clearRect(0,0,320,160);
+  // room
+  g.fillStyle=win?'#ffe3c0':'#3a3550';g.fillRect(0,0,320,120);
+  g.fillStyle=win?'#caa06a':'#2a2740';g.fillRect(0,120,320,40);
+  if(win){
+    // bunting
+    for(let i=0;i<11;i++){g.fillStyle=['#ef72a8','#5b8def','#ffd24a','#4fae3c'][i%4];
+      g.beginPath();g.moveTo(i*30,0);g.lineTo(i*30+15,0);g.lineTo(i*30+7,16);g.closePath();g.fill();}
+    // table + cake
+    g.fillStyle='#9a6b3a';g.fillRect(120,92,80,28);
+    g.fillStyle='#fff0f5';g.fillRect(140,66,40,26);g.fillStyle='#ef72a8';g.fillRect(140,66,40,7);
+    for(let i=0;i<4;i++){g.fillStyle='#ffd24a';g.fillRect(146+i*9,56,2,10);g.fillStyle='#e0532e';g.fillRect(146+i*9,53,2,3);}
+    // balloons
+    const bc=['#e0532e','#5b8def','#4fae3c','#ffd24a','#ef72a8'];
+    for(let i=0;i<5;i++){g.fillStyle=bc[i];g.beginPath();g.ellipse(30+i*16,30,9,12,0,0,7);g.fill();
+      g.strokeStyle='#888';g.beginPath();g.moveTo(30+i*16,42);g.lineTo(30+i*16,70);g.stroke();}
+    // happy guests
+    drawMini(g,70,118,'#ef72a8');drawMini(g,235,118,'#5b8def');drawMini(g,265,118,'#4fae3c');
+    g.fillStyle='#3a2614';g.font='bold 14px Trebuchet MS';g.textAlign='center';g.fillText('🎉 GRATTIS! 🎉',160,140);
+  } else {
+    // rain + sad
+    g.fillStyle='rgba(120,140,180,.5)';for(let i=0;i<40;i++){const rx=(i*37)%320,ry=(i*53+now*40)%120;g.fillRect(rx,ry,1,6);}
+    drawMini(g,90,118,'#888',true);drawMini(g,170,118,'#a87',true);drawMini(g,240,118,'#778',true);
+    g.fillStyle='#cfd';g.font='bold 13px Trebuchet MS';g.textAlign='center';g.fillText('Kalaset blev inställt...',160,142);
+  }
+}
+function drawMini(g,x,y,col,sad){
+  g.fillStyle='#f4cba2';g.fillRect(x-5,y-26,10,10); // head
+  g.fillStyle=col;g.fillRect(x-7,y-16,14,16); // body
+  g.fillStyle='#2a1a12';g.fillRect(x-3,y-23,2,2);g.fillRect(x+1,y-23,2,2);
+  g.fillStyle=sad?'#7a3030':'#c0504a';
+  if(sad)g.fillRect(x-2,y-18,4,2);else g.fillRect(x-2,y-19,4,2);
+}
+function winGame(){state='end';hide('hud');drawEndScene(true);
+  document.getElementById('endTitle').textContent='🎉 Du klarade det!';
+  document.getElementById('endText').textContent='Olivia hann handla allt på listan! På kvällen fylldes huset av ballonger, tårta och glada kalasgäster. Det blev stadens bästa födelsedagsfest! ⭐ (Klart på '+fmt(TOTAL_TIME-timeLeft)+')';
+  show('endView');}
+function loseGame(){state='end';hide('hud');drawEndScene(false);
+  document.getElementById('endTitle').textContent='⏰ Tiden tog slut...';
+  document.getElementById('endText').textContent='Affärerna stängde innan Olivia blev klar. Kalaset blev inställt och gästerna gick hem ledsna. Du saknade: '+(list.filter(i=>!i.got).map(i=>i.label).join(', ')||'inget')+'. Försök igen — du fixar det! 💪';
+  show('endView');}
+
+// ===================== MENU / INPUT =====================
+function show(id){document.getElementById(id).classList.remove('hidden');}
+function hide(id){document.getElementById(id).classList.add('hidden');}
+const isTouch=('ontouchstart'in window)||navigator.maxTouchPoints>0;
+if(isTouch)document.getElementById('touch').style.display='block';
+
+document.getElementById('btnStart').onclick=startGame;
+document.getElementById('btnHow').onclick=()=>show('howto');
+document.getElementById('btnStory').onclick=()=>show('storyView');
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>hide(b.dataset.close));
+document.getElementById('dlgOk').onclick=closeDialog;
+document.getElementById('shopClose').onclick=closeShop;
+document.getElementById('btnAgain').onclick=()=>location.reload();
+
+function startGame(){hide('menu');show('hud');state='play';
+  timeLeft=TOTAL_TIME;sceneIndex=0;coins=90;notifiedDone=false;
+  player.x=8*TS;player.y=9*TS;player.dir='down';
+  list.forEach(i=>i.got=false);for(const k in owned)delete owned[k];
+  quests.cat='none';quests.bread='none';for(const k in coinsTaken)delete coinsTaken[k];
+  document.getElementById('coins').textContent=coins;renderList();
+  openDialog('Mamma',scenes[0].npcs[0].line);}
+
+window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();
+  keys[e.key]=true;if(e.key===' ')handleAction();});
+window.addEventListener('keyup',e=>{keys[e.key]=false;});
+document.querySelectorAll('#dpad button').forEach(b=>{const k=b.dataset.k;
+  const on=e=>{e.preventDefault();keys[k]=true;};const off=e=>{e.preventDefault();keys[k]=false;};
+  b.addEventListener('touchstart',on);b.addEventListener('touchend',off);
+  b.addEventListener('mousedown',on);b.addEventListener('mouseup',off);b.addEventListener('mouseleave',off);});
+document.getElementById('actBtn').addEventListener('touchstart',e=>{e.preventDefault();handleAction();});
+document.getElementById('actBtn').addEventListener('mousedown',e=>{e.preventDefault();handleAction();});
+
+// ===================== LOOP =====================
+function loop(ts){const dt=Math.min(0.05,(ts-lastTs)/1000||0);lastTs=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
