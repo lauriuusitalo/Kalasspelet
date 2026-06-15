@@ -26,9 +26,9 @@
   #rotate.on{display:flex;}
   /* Mobil: klocka uppe till vänster, lista strax under den. Höger sida fri för styrspak. */
   body.touch #hud{align-items:flex-start;}
-  body.touch #clock{font-size:17px;padding:6px 10px;}
+  body.touch #clock{position:fixed;top:8px;right:8px;left:auto;font-size:16px;padding:6px 10px;}
   body.touch #clock small{font-size:11px;}
-  body.touch #listPanel{position:fixed;top:58px;left:8px;right:auto;max-width:210px;padding:6px 9px;}
+  body.touch #listPanel{position:fixed;top:8px;left:8px;right:auto;max-width:200px;padding:6px 9px;}
   body.touch #listPanel h4{font-size:11px;margin-bottom:3px;}
   body.touch #listItems{font-size:11.5px;gap:1px;}
   body.touch #listPanel>div{font-size:11px!important;}
@@ -114,7 +114,8 @@
       <p>🗺️ Gå mot vänster/höger kant för att resa mellan stadens 5 platser.</p>
       <p>🛒 I varje affär kan du köpa olika saker. Köp det som står på <b>Mammas lista</b> (★).</p>
       <p>💰 <b>Pengarna räcker inte!</b> Plocka guldmynt som glittrar i världen och hjälp folk med små uppdrag för att tjäna mer.</p>
-      <p>🐱 Tips: Stina har tappat bort sin katt, och Bagaren behöver hjälp med en leverans. Båda ger 30 mynt!</p>
+      <p>🐱 Tips: Wilma har tappat bort sin vita katt, Elisas häst har rymt, och Bagaren behöver hjälp med en leverans. Varje uppdrag ger 30 mynt!</p>
+      <p>💡 Och har du mynt över på slutet — tänk på vem mer som kanske blir glad av en liten present...</p>
       <p>⏰ Du har bara <b>5 riktiga minuter</b>. Klockan tickar mot 12 — då börjar kalaset och du måste vara hemma med allt!</p>
       <p>🏠 När du har allt: spring hem och prata med mamma innan klockan slår 12.</p>
       <button class="btn" data-close="howto">Tillbaka</button>
@@ -172,10 +173,12 @@ const TS=32, COLS=25, ROWS=14, W=COLS*TS, H=ROWS*TS;
 const TOTAL_TIME=5*60;
 let state='menu';
 let timeLeft=TOTAL_TIME, lastTs=0, coins=90, sceneIndex=0;
-const quests={cat:'none',bread:'none'};
+const quests={cat:'none',bread:'none',horse:'none'};
 const coinsTaken={};
 let coinPickups=0;
+let bonusMom=false;
 const catEntity={scene:3,x:18*TS,y:12*TS};
+const horseEntity={scene:4,x:14*TS,y:12*TS};
 // guldmynt utspridda i världen (6 mynt á 6 mynt). Räcker EJ till listan utan sidouppdrag.
 const worldCoins=[
   [{c:20,r:12}],
@@ -280,7 +283,8 @@ const shops={
  mat:{name:'🛒 Mataffären',desc:'Tårta, godis och annat gott.',items:[
    {id:'tarta',name:'Födelsedagstårta',price:40,listId:'tarta',col:'#f6b5cf'},
    {id:'godis',name:'Godispåsar',price:20,listId:'godis',col:'#e85a8a'},
-   {id:'frukt',name:'Fruktkorg',price:15,col:'#e0532e'}]},
+   {id:'frukt',name:'Fruktkorg',price:15,col:'#e0532e'},
+   {id:'blommor',name:'Blombukett',price:18,col:'#ff6fae',mom:true}]},
  leksak:{name:'🧸 Leksaksaffären',desc:'Den perfekta presenten.',items:[
    {id:'present',name:'Present',price:30,listId:'present',col:'#e03b2c'},
    {id:'spel',name:'Tv-spel',price:35,col:'#3a3a55'},
@@ -301,8 +305,8 @@ const scenes=[
    npcs:[
      {x:10*TS,y:10*TS,pal:'mamma',name:'Mamma',dir:'down',win:true,
       line:'Grattis på födelsedagen, Olivia! 🎂 Ditt kalas börjar klockan 12 — men vi måste handla allt först! På listan: festklänning, tårta, godispåsar, present och ballonger. Jag kunde bara ge dig 90 mynt — det räcker inte! Plocka mynt och hjälp folk i stan för att tjäna mer. Var hemma INNAN klockan slår 12 — du har 5 minuter! Skynda dig.'},
-     {x:17*TS,y:9*TS,pal:'granne',name:'Stina',dir:'left',
-      line:'Grattis Olivia! Jag kommer på ditt kalas i kväll. 🎉 Förresten — festklänningen finns på Stora torget, åt höger!'} ] },
+     {x:17*TS,y:9*TS,pal:'girl',name:'Wilma',dir:'left',
+      line:'*snyft* 😿 Hej bästis...'} ] },
 
  { name:'Stora torget', seed:23, grass1:'#67ab53',grass2:'#5c9e49',path:'#b8b2a0',flower:'#ffd24a',terrain:'plaza',
    pond:{tx:10,ty:8,tw:5,th:3},
@@ -312,8 +316,8 @@ const scenes=[
    npcs:[
      {x:7*TS,y:8*TS,pal:'keeper',name:'Butiksägare',dir:'down',
       line:'Välkommen till klädbutiken! Vi har den finaste festklänningen i hela stan. Gå in genom dörren!'},
-     {x:19*TS,y:9*TS,pal:'girl',name:'Wilma',dir:'down',
-      line:'Hej bästis! 💖 Grattis på födelsedagen! Jag längtar till ditt kalas. Glöm inte ballongerna — de säljs i festbutiken längst bort. 🎈'} ] },
+     {x:19*TS,y:9*TS,pal:'granne',name:'Stina',dir:'down',
+      line:'Grattis Olivia! 🎉 Jag kommer på ditt kalas. Glöm inte ballongerna — de säljs i festbutiken längst bort. 🎈'} ] },
 
  { name:'Marknadsgatan', seed:37, grass1:'#7bb44a',grass2:'#6fa83f',path:'#d2b074',flower:'#e0532e',terrain:'market',
    houses:[
@@ -436,12 +440,51 @@ function drawFlower(c,r,col){
 function drawCat(x,y){
   const b=Math.sin(now*4)*1;
   ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(x,y,9,3,0,0,7);ctx.fill();
-  ctx.fillStyle='#e08a2e';ctx.fillRect(x-8,y-12+b,16,10); // body
+  ctx.fillStyle='#f4f4f4';ctx.fillRect(x-8,y-12+b,16,10); // body (vit)
   ctx.fillRect(x-10,y-16+b,9,8); // head
-  ctx.fillStyle='#c8731f';ctx.fillRect(x-10,y-19+b,2,4);ctx.fillRect(x-5,y-19+b,2,4); // ears
-  ctx.fillStyle='#2a1a12';ctx.fillRect(x-8,y-14+b,1,1);ctx.fillRect(x-4,y-14+b,1,1); // eyes
-  ctx.fillStyle='#e08a2e';ctx.fillRect(x+7,y-14+b,3,2);ctx.fillRect(x+9,y-18+b,2,5); // tail
-  ctx.fillStyle='#f4a94e';ctx.fillRect(x-6,y-10+b,4,3);
+  ctx.fillStyle='#ffb6cf';ctx.fillRect(x-10,y-19+b,2,4);ctx.fillRect(x-5,y-19+b,2,4); // ears (rosa)
+  ctx.fillStyle='#2a6a3a';ctx.fillRect(x-8,y-14+b,1,1);ctx.fillRect(x-4,y-14+b,1,1); // eyes (gröna)
+  ctx.fillStyle='#f4f4f4';ctx.fillRect(x+7,y-14+b,3,2);ctx.fillRect(x+9,y-18+b,2,5); // tail
+  ctx.fillStyle='#d8d8d8';ctx.fillRect(x-6,y-10+b,4,3);
+}
+function drawHorse(x,y){
+  const b=Math.sin(now*3)*1, Y=v=>v+b;
+  const coat='#dcc28c', shade='#c2a868', dark='#4f3b22', mane1='#efe3bf', maneD='#39301c';
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(x,y,18,5,0,0,7);ctx.fill();
+  // tail (flowing, ljus med mörk kärna)
+  ctx.fillStyle=maneD;ctx.fillRect(x-22,Y(y-26),5,22);
+  ctx.fillStyle=mane1;ctx.fillRect(x-21,Y(y-24),2,18);
+  // legs
+  ctx.fillStyle=coat;ctx.fillRect(x-14,Y(y-13),5,13);ctx.fillRect(x-5,Y(y-13),5,13);
+  ctx.fillRect(x+4,Y(y-13),5,13);ctx.fillRect(x+13,Y(y-13),5,13);
+  ctx.fillStyle=dark; // mörka nedre ben/hovar
+  ctx.fillRect(x-14,Y(y-4),5,4);ctx.fillRect(x-5,Y(y-4),5,4);ctx.fillRect(x+4,Y(y-4),5,4);ctx.fillRect(x+13,Y(y-4),5,4);
+  // body
+  ctx.fillStyle=coat;ctx.fillRect(x-18,Y(y-30),38,18);
+  ctx.fillStyle=shade;ctx.fillRect(x-18,Y(y-16),38,4); // mage-skugga
+  // dorsal-stripe längs ryggen (typiskt fjordhäst)
+  ctx.fillStyle=maneD;ctx.fillRect(x-18,Y(y-30),38,2);
+  // neck
+  ctx.fillStyle=coat;ctx.beginPath();
+  ctx.moveTo(x+8,Y(y-30));ctx.lineTo(x+15,Y(y-50));ctx.lineTo(x+27,Y(y-48));ctx.lineTo(x+22,Y(y-28));ctx.closePath();ctx.fill();
+  // head
+  ctx.fillStyle=coat;ctx.fillRect(x+22,Y(y-52),14,13);
+  ctx.fillStyle=shade;ctx.fillRect(x+31,Y(y-47),5,8); // mule
+  ctx.fillStyle=dark;ctx.fillRect(x+33,Y(y-43),2,3); // näsborre
+  // öron
+  ctx.fillStyle=coat;ctx.fillRect(x+22,Y(y-57),4,6);ctx.fillRect(x+29,Y(y-57),4,6);
+  ctx.fillStyle=maneD;ctx.fillRect(x+23,Y(y-56),1,4);ctx.fillRect(x+30,Y(y-56),1,4);
+  // öga
+  ctx.fillStyle='#140d06';ctx.fillRect(x+28,Y(y-49),2,2);
+  // stående fjordman med mörk mittstrimma, längs nackkammen
+  for(let t=0;t<=11;t++){
+    const mx=x+9+t*(14/11), my=(y-30)-t*(20/11);
+    ctx.fillStyle=mane1;ctx.fillRect(mx-2,Y(my-6),5,7);
+    ctx.fillStyle=maneD;ctx.fillRect(mx,Y(my-6),1,7); // mörk kärna
+  }
+  // pannlugg
+  ctx.fillStyle=maneD;ctx.fillRect(x+27,Y(y-55),2,5);
 }
 function drawCoin(x,y){
   const b=Math.sin(now*3+x)*2;
@@ -500,6 +543,9 @@ function draw(){
   // lost cat in the park (before found)
   if(sceneIndex===catEntity.scene && (quests.cat==='none'||quests.cat==='active'))
     drawCat(catEntity.x,catEntity.y);
+  // runaway horse (before found)
+  if(sceneIndex===horseEntity.scene && (quests.horse==='none'||quests.horse==='active'))
+    drawHorse(horseEntity.x,horseEntity.y);
   // depth-sorted: houses, trees, npcs, player by baseline Y
   const ents=[];
   sc.houses.forEach(h=>ents.push({y:(h.ty+h.th)*TS,draw:()=>drawHouse(h)}));
@@ -508,8 +554,19 @@ function draw(){
   ents.push({y:player.y,draw:()=>drawChar(PAL.olivia,player.dir,player.moving,player.step,player.x,player.y)});
   ents.sort((a,b)=>a.y-b.y);
   ents.forEach(e=>e.draw());
-  // cat follows Olivia once found
+  // cat / horse follow Olivia once found
   if(quests.cat==='found') drawCat(player.x-22,player.y-2);
+  if(quests.horse==='found') drawHorse(player.x+26,player.y-2);
+  // Wilma cries until cat is returned, then is happy
+  const wil=sc.npcs.find(n=>n.name==='Wilma');
+  if(wil){
+    if(quests.cat!=='done'){ ctx.fillStyle='#5bb0ff';
+      ctx.fillRect(wil.x-5,wil.y-32,2,4);ctx.fillRect(wil.x+3,wil.y-32,2,4);
+      ctx.fillRect(wil.x-5,wil.y-26,2,3);ctx.fillRect(wil.x+3,wil.y-26,2,3);
+    } else { ctx.fillStyle='#ff4f8b'; // happy heart
+      ctx.fillRect(wil.x-3,wil.y-40,2,2);ctx.fillRect(wil.x+1,wil.y-40,2,2);ctx.fillRect(wil.x-3,wil.y-38,6,2);ctx.fillRect(wil.x-2,wil.y-36,4,2);ctx.fillRect(wil.x-1,wil.y-34,2,2);
+    }
+  }
   // NPC name tags
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 11px Trebuchet MS';
   sc.npcs.forEach(n=>{
@@ -575,6 +632,9 @@ function update(dt){
   if(sceneIndex===catEntity.scene&&(quests.cat==='none'||quests.cat==='active')){
     const d=Math.hypot(player.x-catEntity.x,player.y-catEntity.y);
     if(d<48&&d<best){best=d;interactTarget={type:'cat'};}}
+  if(sceneIndex===horseEntity.scene&&(quests.horse==='none'||quests.horse==='active')){
+    const d=Math.hypot(player.x-horseEntity.x,player.y-horseEntity.y);
+    if(d<54&&d<best){best=d;interactTarget={type:'horse'};}}
 
   // pick up world coins
   (worldCoins[sceneIndex]||[]).forEach((co,idx)=>{const key=sceneIndex+'_'+idx;if(coinsTaken[key])return;
@@ -585,6 +645,7 @@ function update(dt){
   if(interactTarget){hint.style.display='block';
     hint.textContent= interactTarget.type==='shop'?('⭐ Mellanslag: gå in i '+interactTarget.name)
       :interactTarget.type==='cat'?'⭐ Mellanslag: klappa katten 🐱'
+      :interactTarget.type==='horse'?'⭐ Mellanslag: fånga hästen 🐴'
       :'⭐ Mellanslag: prata med '+interactTarget.npc.name;
   } else hint.style.display='none';
 
@@ -602,8 +663,13 @@ function handleAction(){
   if(state!=='play'||!interactTarget)return;
   if(interactTarget.type==='shop'){openShop(interactTarget.key);return;}
   if(interactTarget.type==='cat'){
-    if(quests.cat==='active'){quests.cat='found';openDialog('Misse 🐱','Mjau! Du hittade Misse! Ta henne tillbaka till Stina i Olivias kvarter (längst åt vänster).');}
-    else openDialog('Katt 🐱','En söt katt sitter och spinner. Kanske letar någon efter den?');
+    if(quests.cat==='active'){quests.cat='found';openDialog('Nala 🐱','Mjau! Du hittade den vita katten Nala! Ta honom tillbaka till Wilma i Olivias kvarter (längst åt vänster).');}
+    else openDialog('Vit katt 🐱','En söt vit katt sitter och spinner. Kanske letar någon efter den?');
+    return;
+  }
+  if(interactTarget.type==='horse'){
+    if(quests.horse==='active'){quests.horse='found';openDialog('Hästen 🐴','Gnägg! Du fångade den rymda hästen! Ta den tillbaka till Elisa på Marknadsgatan.');}
+    else openDialog('Häst 🐴','En vacker häst betar lugnt här. Den ser ut att ha rymt från någonstans...');
     return;
   }
   questTalk(interactTarget.npc);
@@ -612,11 +678,18 @@ function questTalk(n){
   if(n.win){ if(allGot())winGame();
     else openDialog('Mamma','Du är inte klar än! 🛍️ Du saknar: '+list.filter(i=>!i.got).map(i=>i.label).join(', ')+'. Skynda dig!');
     return; }
-  if(n.name==='Stina'){
-    if(quests.cat==='none'){quests.cat='active';openDialog(n.name,'Åh nej! Min katt Misse har sprungit bort — jag tror hon är i Stadsparken (åt höger). Hittar du henne får du 30 mynt! 🐱');}
-    else if(quests.cat==='active')openDialog(n.name,'Har du hittat Misse än? Leta i Stadsparken!');
-    else if(quests.cat==='found'){quests.cat='done';addCoins(30);openDialog(n.name,'Misse! ❤️ Tack så mycket, Olivia! Här är 30 mynt som tack.');}
-    else openDialog(n.name,'Tack igen för att du räddade Misse! 🐱');
+  if(n.name==='Wilma'){
+    if(quests.cat==='none'){quests.cat='active';openDialog(n.name,'*snyft* 😿 Olivia! Min vita katt Nala har sprungit bort — jag tror han är i Stadsparken (åt höger). Snälla, kan du leta? Du får 30 mynt!');}
+    else if(quests.cat==='active')openDialog(n.name,'*snyft* Har du hittat Nala än? Han är nog kvar i Stadsparken... 😢');
+    else if(quests.cat==='found'){quests.cat='done';addCoins(30);openDialog(n.name,'MÅNS! 😺 *kramar katten och torkar tårarna* Tack snälla Olivia, du räddade min dag! Här är 30 mynt. Nu ser jag fram emot ditt kalas! 💖');}
+    else openDialog(n.name,'Tack igen för att du hittade Nala! 😺 Bästa födelsedagsbarnet!');
+    return;
+  }
+  if(n.name==='Elisa'){
+    if(quests.horse==='none'){quests.horse='active';openDialog(n.name,'Grattis Olivia! Men åh nej — en häst har rymt från min ridskola! 🐴 Jag tror den sprang ända bort till Festtorget (längst åt höger). Hittar du den får du 30 mynt!');}
+    else if(quests.horse==='active')openDialog(n.name,'Har du hittat hästen än? Leta på Festtorget längst åt höger!');
+    else if(quests.horse==='found'){quests.horse='done';addCoins(30);openDialog(n.name,'Tack Olivia! 🐴 Nu kan jag rida tillbaka den till ridskolan. Här är 30 mynt — vi ses på ditt kalas!');}
+    else openDialog(n.name,'Tack för hjälpen med hästen! 🐴');
     return;
   }
   if(n.name==='Bagaren'){
@@ -647,6 +720,7 @@ function renderShop(){const box=document.getElementById('shopItems');box.innerHT
 function buy(it){if(owned[it.id])return;
   if(coins<it.price){openDialog('Affärsbiträde','Oj, du har inte råd med det just nu. 💰');return;}
   coins-=it.price;owned[it.id]=true;
+  if(it.mom)bonusMom=true;
   if(it.listId){const li=list.find(l=>l.id===it.listId);if(li)li.got=true;}
   document.getElementById('coins').textContent=coins;renderList();renderShop();
   if(allGot()&&!notifiedDone){notifiedDone=true;
@@ -670,20 +744,50 @@ function drawEndScene(win){
   g.fillStyle=win?'#ffe3c0':'#3a3550';g.fillRect(0,0,320,120);
   g.fillStyle=win?'#caa06a':'#2a2740';g.fillRect(0,120,320,40);
   if(win){
-    // bunting
-    for(let i=0;i<11;i++){g.fillStyle=['#ef72a8','#5b8def','#ffd24a','#4fae3c'][i%4];
-      g.beginPath();g.moveTo(i*30,0);g.lineTo(i*30+15,0);g.lineTo(i*30+7,16);g.closePath();g.fill();}
+    // warm party room
+    const grd=g.createLinearGradient(0,0,0,120);grd.addColorStop(0,'#ffe9c0');grd.addColorStop(1,'#ffd0a0');
+    g.fillStyle=grd;g.fillRect(0,0,320,120);
+    g.fillStyle='#caa06a';g.fillRect(0,120,320,40); // floor
+    g.fillStyle='#b58a52';for(let i=0;i<320;i+=20)g.fillRect(i,120,1,40);
+    // bunting flags
+    const fc=['#ef72a8','#5b8def','#ffd24a','#4fae3c','#e0532e'];
+    for(let i=0;i<13;i++){g.fillStyle=fc[i%5];
+      g.beginPath();g.moveTo(i*26,0);g.lineTo(i*26+13,0);g.lineTo(i*26+6,14);g.closePath();g.fill();}
+    // confetti
+    for(let i=0;i<60;i++){g.fillStyle=fc[i%5];
+      const cx=(i*47+ (now*30))%320, cy=(i*31+now*20)%118;g.fillRect(cx|0,cy|0,3,3);}
+    // floating balloons with strings
+    const bc=['#e0532e','#5b8def','#4fae3c','#ffd24a','#ef72a8','#a06ae0','#e08a2e'];
+    for(let i=0;i<7;i++){const bx=24+i*44+Math.sin(now+i)*3, by=34+ (i%2?6:0);
+      g.strokeStyle='rgba(120,120,120,.7)';g.beginPath();g.moveTo(bx,by+12);g.lineTo(bx,by+34);g.stroke();
+      g.fillStyle=bc[i];g.beginPath();g.ellipse(bx,by,8,11,0,0,7);g.fill();
+      g.fillStyle='rgba(255,255,255,.4)';g.fillRect(bx-3,by-5,2,4);}
+    // banner
+    g.fillStyle='#c0398f';g.fillRect(70,44,180,22);
+    g.fillStyle='#9c2d72';g.fillRect(70,62,180,4);
+    g.fillStyle='#fff';g.font='bold 15px Trebuchet MS';g.textAlign='center';g.textBaseline='middle';
+    g.fillText('GRATTIS OLIVIA!',160,55);
     // table + cake
-    g.fillStyle='#9a6b3a';g.fillRect(120,92,80,28);
-    g.fillStyle='#fff0f5';g.fillRect(140,66,40,26);g.fillStyle='#ef72a8';g.fillRect(140,66,40,7);
-    for(let i=0;i<4;i++){g.fillStyle='#ffd24a';g.fillRect(146+i*9,56,2,10);g.fillStyle='#e0532e';g.fillRect(146+i*9,53,2,3);}
-    // balloons
-    const bc=['#e0532e','#5b8def','#4fae3c','#ffd24a','#ef72a8'];
-    for(let i=0;i<5;i++){g.fillStyle=bc[i];g.beginPath();g.ellipse(30+i*16,30,9,12,0,0,7);g.fill();
-      g.strokeStyle='#888';g.beginPath();g.moveTo(30+i*16,42);g.lineTo(30+i*16,70);g.stroke();}
-    // happy guests
-    drawMini(g,70,118,'#ef72a8');drawMini(g,235,118,'#5b8def');drawMini(g,265,118,'#4fae3c');
-    g.fillStyle='#3a2614';g.font='bold 14px Trebuchet MS';g.textAlign='center';g.fillText('🎉 GRATTIS! 🎉',160,140);
+    g.fillStyle='#9a6b3a';g.fillRect(124,96,72,22);
+    g.fillStyle='#fff0f5';g.fillRect(142,74,36,22);g.fillStyle='#ef72a8';g.fillRect(142,74,36,6);
+    g.fillStyle='#f6b5cf';g.fillRect(142,84,36,3);
+    for(let i=0;i<4;i++){g.fillStyle='#ffd24a';g.fillRect(148+i*8,64,2,10);
+      g.fillStyle='#e0532e';g.fillRect(148+i*8,60,2,4);}
+    // five happy guests: Olivia + Wilma + Stina + Elisa + Alivia
+    const gc=['#ef72a8','#f0c040','#3fa46d','#ef6a4a','#a06ae0'];
+    const gx=[26,66,250,288,108];
+    drawMini(g,26,119,gc[0]);   // Olivia
+    drawMini(g,62,119,gc[1]);   // Wilma
+    drawMini(g,250,119,gc[2]);  // Stina
+    drawMini(g,286,119,gc[3]);  // Elisa
+    drawMini(g,222,119,gc[4]);  // Alivia
+    // white cat + horse joining the party
+    g.fillStyle='#f4f4f4';g.fillRect(92,110,12,7);g.fillRect(90,106,7,6);
+    g.fillStyle='#ffb6cf';g.fillRect(90,103,2,3);g.fillRect(94,103,2,3);
+    g.fillStyle='#dcc28c';g.fillRect(196,104,17,9);g.fillRect(210,96,7,10); // kropp+huvud
+    g.fillStyle='#39301c';g.fillRect(208,94,8,2);g.fillRect(196,104,17,1); // man + ryggstrimma
+    g.fillStyle='#efe3bf';g.fillRect(209,93,2,3);
+    g.fillStyle='#140d06';g.fillRect(214,99,1,1);
   } else {
     // rain + sad
     g.fillStyle='rgba(120,140,180,.5)';for(let i=0;i<40;i++){const rx=(i*37)%320,ry=(i*53+now*40)%120;g.fillRect(rx,ry,1,6);}
@@ -700,22 +804,25 @@ function drawMini(g,x,y,col,sad){
 }
 function winGame(){state='end';hide('hud');drawEndScene(true);
   document.getElementById('endTitle').textContent='🎉 Du klarade det!';
-  document.getElementById('endText').textContent='Olivia hann hem med allt precis innan klockan slog 12! Huset fylldes av ballonger, tårta och glada vänner. Det blev stadens bästa födelsedagskalas! 🎉';
+  document.getElementById('endText').textContent='Olivia hann hem med allt precis innan klockan slog 12! Huset fylldes av ballonger, tårta och glada vänner. Det blev stadens bästa födelsedagskalas! 🎉'+
+    (bonusMom?' Och Olivia kom själv på att köpa en blombukett till mamma — mamma blev överlycklig! 💐':'');
   // ---- POÄNG ----
-  const questsDone=(quests.cat==='done'?1:0)+(quests.bread==='done'?1:0);
+  const questsDone=(quests.cat==='done'?1:0)+(quests.bread==='done'?1:0)+(quests.horse==='done'?1:0);
   const base=1000;
   const timeBonus=Math.floor(timeLeft)*10;       // snabbhet
   const questBonus=questsDone*500;               // uppdrag
   const coinBonus=coinPickups*100;               // plockade mynt
-  const total=base+timeBonus+questBonus+coinBonus;
-  const stars=total>=4000?3:total>=2800?2:1;
+  const momBonus=bonusMom?800:0;                 // hemlig present till mamma
+  const total=base+timeBonus+questBonus+coinBonus+momBonus;
+  const stars=total>=4500?3:total>=3000?2:1;
   const rad=(t,v)=>'<div style="display:flex;justify-content:space-between;max-width:300px;margin:2px auto;"><span>'+t+'</span><b style="color:#ffe27a">'+v+'</b></div>';
   document.getElementById('endScore').innerHTML=
     '<div style="font-size:30px;letter-spacing:4px;">'+'⭐'.repeat(stars)+'☆'.repeat(3-stars)+'</div>'+
     rad('🏁 Klarade kalaset','+'+base)+
     rad('⏱️ Tid kvar ('+fmt(timeLeft)+')','+'+timeBonus)+
-    rad('🎯 Sidouppdrag ('+questsDone+'/2)','+'+questBonus)+
+    rad('🎯 Sidouppdrag ('+questsDone+'/3)','+'+questBonus)+
     rad('💰 Plockade mynt ('+coinPickups+')','+'+coinBonus)+
+    (momBonus?rad('💐 Hemlig present till mamma','+'+momBonus):'')+
     '<div style="border-top:2px solid rgba(255,255,255,.3);margin:8px auto 0;max-width:300px;padding-top:6px;font-size:22px;display:flex;justify-content:space-between;"><span>POÄNG</span><b style="color:#9be37a">'+total+'</b></div>';
   show('endView');}
 function loseGame(){state='end';hide('hud');drawEndScene(false);
@@ -749,7 +856,7 @@ function startGame(){hide('menu');show('hud');state='play';
   timeLeft=TOTAL_TIME;sceneIndex=0;coins=90;notifiedDone=false;
   player.x=8*TS;player.y=9*TS;player.dir='down';
   list.forEach(i=>i.got=false);for(const k in owned)delete owned[k];
-  quests.cat='none';quests.bread='none';coinPickups=0;for(const k in coinsTaken)delete coinsTaken[k];
+  quests.cat='none';quests.bread='none';quests.horse='none';coinPickups=0;bonusMom=false;for(const k in coinsTaken)delete coinsTaken[k];
   document.getElementById('coins').textContent=coins;renderList();
   openDialog('Mamma',scenes[0].npcs[0].line);}
 
