@@ -6,9 +6,9 @@
 <title>Olivia och Födelsedagskalaset</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;background:#0e0a18;font-family:"Trebuchet MS","Segoe UI",sans-serif;overflow:hidden;}
-  #wrap{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;}
-  #game{background:#000;display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;touch-action:none;}
+  html,body{height:100vh;height:100dvh;background:#0e0a18;font-family:"Trebuchet MS","Segoe UI",sans-serif;overflow:hidden;}
+  #wrap{position:relative;width:100vw;height:100vh;height:100dvh;display:flex;align-items:flex-start;justify-content:center;}
+  #game{background:#000;display:block;width:100%;height:100%;object-fit:contain;object-position:top center;image-rendering:pixelated;touch-action:none;}
   #hud{position:absolute;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;color:#fff;font-size:14px;z-index:5;gap:8px;}
   .panel{background:rgba(20,12,40,.78);border:2px solid rgba(255,255,255,.28);border-radius:12px;padding:8px 12px;backdrop-filter:blur(4px);}
   #clock{font-size:20px;font-weight:bold;text-align:center;}
@@ -18,10 +18,15 @@
   #listItems{display:flex;flex-direction:column;gap:2px;font-size:13px;}
   .li-done{text-decoration:line-through;opacity:.5;}
   #touch{position:absolute;inset:0;z-index:6;display:none;pointer-events:none;}
-  #dpad{position:absolute;left:18px;bottom:22px;width:150px;height:150px;pointer-events:auto;}
+  #dpad{position:absolute;right:18px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:150px;height:150px;pointer-events:auto;}
   #dpad button{position:absolute;width:50px;height:50px;border:none;border-radius:12px;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.35);color:#fff;font-size:22px;}
   #dpad .up{left:50px;top:0}#dpad .down{left:50px;top:100px}#dpad .left{left:0;top:50px}#dpad .right{left:100px;top:50px}
-  #actBtn{position:absolute;right:24px;bottom:40px;width:96px;height:96px;border-radius:50%;background:rgba(120,90,220,.72);border:3px solid rgba(255,255,255,.5);color:#fff;font-size:15px;font-weight:bold;pointer-events:auto;}
+  #actBtn{position:absolute;left:24px;bottom:calc(28px + env(safe-area-inset-bottom,0px));width:96px;height:96px;border-radius:50%;background:rgba(120,90,220,.72);border:3px solid rgba(255,255,255,.5);color:#fff;font-size:15px;font-weight:bold;pointer-events:auto;}
+  #rotate{position:absolute;inset:0;z-index:50;background:#120c22;color:#fff;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:30px;}
+  #rotate.on{display:flex;}
+  #rotate .phone{font-size:64px;animation:tilt 1.4s ease-in-out infinite;}
+  @keyframes tilt{0%,100%{transform:rotate(0)}50%{transform:rotate(90deg)}}
+  #rotate h2{margin:18px 0 8px;color:#ffd86b;}
   .overlay{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;}
   #menu{background:radial-gradient(circle at 50% 28%,#3c2566,#120c22);color:#fff;}
   #menu h1{font-size:clamp(28px,7vw,54px);margin-bottom:6px;line-height:1.05;text-shadow:3px 3px 0 #000;background:linear-gradient(#ffd86b,#ff9ad1);-webkit-background-clip:text;background-clip:text;color:transparent;}
@@ -49,7 +54,7 @@
   <canvas id="game" width="800" height="448"></canvas>
 
   <div id="hud" class="hidden">
-    <div class="panel" id="clock"><span id="clockTime">07:00</span><br><small id="timeLeft">15:00 kvar</small></div>
+    <div class="panel" id="clock"><span id="clockTime">08:00</span><br><small id="timeLeft">05:00 kvar</small></div>
     <div class="panel" id="listPanel">
       <h4>🎀 MAMMAS LISTA</h4>
       <div id="listItems"></div>
@@ -58,6 +63,12 @@
   </div>
 
   <div id="hint"></div>
+
+  <div id="rotate">
+    <div class="phone">📱</div>
+    <h2>Vrid telefonen!</h2>
+    <p>Håll telefonen i liggande läge för att spela. 🎮</p>
+  </div>
 
   <div id="touch">
     <div id="dpad">
@@ -71,7 +82,7 @@
 
   <div id="menu" class="overlay">
     <h1>Olivia &amp;<br>Födelsedagskalaset</h1>
-    <div class="sub">Ett pixeläventyr — hjälp Olivia handla allt på listan innan affärerna stänger! Pengarna räcker inte… du måste tjäna mer genom att hitta mynt och hjälpa folk i stan. Du har bara 7 minuter!</div>
+    <div class="sub">Det är Olivias födelsedag! Hjälp henne handla allt på listan och vara hemma innan klockan slår 12, då kalaset börjar. Pengarna räcker inte… tjäna mer genom att hitta mynt och hjälpa vännerna. Du har bara 5 minuter!</div>
     <button class="btn" id="btnStart">▶ Starta spel</button>
     <button class="btn alt" id="btnHow">📖 Instruktioner</button>
     <button class="btn alt" id="btnStory">✨ Berättelsen</button>
@@ -85,9 +96,9 @@
       <p>🗺️ Gå mot vänster/höger kant för att resa mellan stadens 5 platser.</p>
       <p>🛒 I varje affär kan du köpa olika saker. Köp det som står på <b>Mammas lista</b> (★).</p>
       <p>💰 <b>Pengarna räcker inte!</b> Plocka guldmynt som glittrar i världen och hjälp folk med små uppdrag för att tjäna mer.</p>
-      <p>🐱 Tips: Granne Stina har tappat bort sin katt, och Bagaren behöver hjälp med en leverans. Båda ger 30 mynt!</p>
-      <p>⏰ Du har bara <b>7 riktiga minuter</b>. Klockan går från morgon mot kväll — hinner du inte stänger affärerna!</p>
-      <p>🏠 När du har allt: spring hem och prata med mamma.</p>
+      <p>🐱 Tips: Stina har tappat bort sin katt, och Bagaren behöver hjälp med en leverans. Båda ger 30 mynt!</p>
+      <p>⏰ Du har bara <b>5 riktiga minuter</b>. Klockan tickar mot 12 — då börjar kalaset och du måste vara hemma med allt!</p>
+      <p>🏠 När du har allt: spring hem och prata med mamma innan klockan slår 12.</p>
       <button class="btn" data-close="howto">Tillbaka</button>
     </div>
   </div>
@@ -95,10 +106,10 @@
   <div id="storyView" class="overlay hidden">
     <div class="card">
       <h2>✨ Berättelsen</h2>
-      <p>Ikväll är det stort födelsedagskalas för Olivias bästa vän!</p>
+      <p>Idag fyller Olivia år, och klockan 12 börjar hennes eget födelsedagskalas!</p>
       <p>Mamma har skrivit en lista med allt som behövs: en festklänning, en tårta, godispåsar, en present och ballonger.</p>
-      <p>Men mamma har bara 90 mynt — och allt på listan kostar mer än så! Olivia måste plocka glittrande guldmynt och hjälpa stadens invånare med små uppdrag för att tjäna ihop resten.</p>
-      <p>Affärerna stänger när kvällen kommer, och tiden är knapp — bara 7 minuter. Spring runt, prata med folk, lös uppdragen och handla allt i tid — annars blir kalaset inställt och gästerna ledsna. Klarar du det blir det stadens bästa fest! 🎉</p>
+      <p>Men mamma har bara 90 mynt — och allt på listan kostar mer än så! Olivia måste plocka glittrande guldmynt och hjälpa sina vänner Wilma, Stina, Elisa och Alivia med små uppdrag för att tjäna ihop resten.</p>
+      <p>Tiden är knapp — Olivia måste vara hemma med allt INNAN klockan slår 12, annars hinner festen inte bli klar och gästerna blir ledsna. Klarar du det blir det stadens bästa kalas! 🎉</p>
       <button class="btn" data-close="storyView">Tillbaka</button>
     </div>
   </div>
@@ -125,6 +136,7 @@
       <h2 id="endTitle"></h2>
       <canvas id="endCanvas" width="320" height="160" style="image-rendering:pixelated;width:320px;max-width:90%;border-radius:10px;margin:8px 0;"></canvas>
       <p id="endText"></p>
+      <div id="endScore" style="margin:10px 0;"></div>
       <button class="btn" id="btnAgain">🔁 Spela igen</button>
     </div>
   </div>
@@ -139,11 +151,12 @@ ctx.imageSmoothingEnabled=false;
 const TS=32, COLS=25, ROWS=14, W=COLS*TS, H=ROWS*TS;
 
 // ===================== STATE =====================
-const TOTAL_TIME=7*60;
+const TOTAL_TIME=5*60;
 let state='menu';
 let timeLeft=TOTAL_TIME, lastTs=0, coins=90, sceneIndex=0;
 const quests={cat:'none',bread:'none'};
 const coinsTaken={};
+let coinPickups=0;
 const catEntity={scene:3,x:18*TS,y:12*TS};
 // guldmynt utspridda i världen (6 mynt á 6 mynt). Räcker EJ till listan utan sidouppdrag.
 const worldCoins=[
@@ -269,9 +282,9 @@ const scenes=[
      {tx:20,ty:5,tw:4,th:3,wall:'#d8c0e0',roof:'#7c4dd6',name:'Granne'} ],
    npcs:[
      {x:10*TS,y:10*TS,pal:'mamma',name:'Mamma',dir:'down',win:true,
-      line:'Olivia! Ikväll är det kalas. 🎉 På listan: festklänning, tårta, godispåsar, present och ballonger. Men jag kunde bara ge dig 90 mynt — det räcker inte till allt! Plocka mynt på vägen och hjälp folk i stan för att tjäna mer. Affärerna stänger snart — du har 7 minuter! Spring sen hem till mig.'},
-     {x:17*TS,y:9*TS,pal:'granne',name:'Granne Stina',dir:'left',
-      line:'Hej Olivia! Klädbutiken ligger borta på Stora torget, åt höger. Lycka till! 👋'} ] },
+      line:'Grattis på födelsedagen, Olivia! 🎂 Ditt kalas börjar klockan 12 — men vi måste handla allt först! På listan: festklänning, tårta, godispåsar, present och ballonger. Jag kunde bara ge dig 90 mynt — det räcker inte! Plocka mynt och hjälp folk i stan för att tjäna mer. Var hemma INNAN klockan slår 12 — du har 5 minuter! Skynda dig.'},
+     {x:17*TS,y:9*TS,pal:'granne',name:'Stina',dir:'left',
+      line:'Grattis Olivia! Jag kommer på ditt kalas i kväll. 🎉 Förresten — festklänningen finns på Stora torget, åt höger!'} ] },
 
  { name:'Stora torget', seed:23, grass1:'#67ab53',grass2:'#5c9e49',path:'#b8b2a0',flower:'#ffd24a',terrain:'plaza',
    pond:{tx:10,ty:8,tw:5,th:3},
@@ -281,8 +294,8 @@ const scenes=[
    npcs:[
      {x:7*TS,y:8*TS,pal:'keeper',name:'Butiksägare',dir:'down',
       line:'Välkommen till klädbutiken! Vi har den finaste festklänningen i hela stan. Gå in genom dörren!'},
-     {x:19*TS,y:9*TS,pal:'boy',name:'Pojken Ali',dir:'down',
-      line:'Jag älskar kalas! Glöm inte ballongerna — de säljs i festbutiken längst bort. 🎈'} ] },
+     {x:19*TS,y:9*TS,pal:'girl',name:'Wilma',dir:'down',
+      line:'Hej bästis! 💖 Grattis på födelsedagen! Jag längtar till ditt kalas. Glöm inte ballongerna — de säljs i festbutiken längst bort. 🎈'} ] },
 
  { name:'Marknadsgatan', seed:37, grass1:'#7bb44a',grass2:'#6fa83f',path:'#d2b074',flower:'#e0532e',terrain:'market',
    houses:[
@@ -291,18 +304,16 @@ const scenes=[
    npcs:[
      {x:11*TS,y:8*TS,pal:'baker',name:'Bagaren',dir:'down',
       line:'Doften av nybakat! Tårtan i mataffären är världens godaste. Missa inte godispåsarna heller!'},
-     {x:19*TS,y:10*TS,pal:'girl',name:'Vännen Maja',dir:'left',
-      line:'Hej Olivia! Spännande med kalaset i kväll. Skynda dig så hinner du allt! 😊'} ] },
+     {x:19*TS,y:10*TS,pal:'girl',name:'Elisa',dir:'left',
+      line:'Grattis Olivia! 😊 Vi ses på ditt kalas. Skynda dig så hinner du handla allt innan klockan 12!'} ] },
 
  { name:'Stadsparken', seed:53, grass1:'#4f9e44',grass2:'#458a3b',path:'#c2a86a',flower:'#5b8def',terrain:'park',
    pond:{tx:14,ty:7,tw:6,th:4},
    houses:[
      {tx:3,ty:2,tw:5,th:4,wall:'#cfeaf0',roof:'#1f9e8a',name:'Leksaksaffär',shop:'leksak'} ],
    npcs:[
-     {x:9*TS,y:9*TS,pal:'boy',name:'Pojken Noah',dir:'right',
-      line:'Leksaksaffären har de bästa presenterna! Jag fick en där till min födelsedag. 🎁'},
-     {x:12*TS,y:11*TS,pal:'girl',name:'Flickan Vera',dir:'down',
-      line:'Titta vilken fin damm! Anka simmar där. Glöm inte presenten till kalaset!'} ] },
+     {x:9*TS,y:9*TS,pal:'girl',name:'Alivia',dir:'right',
+      line:'Grattis Olivia! 🎁 Leksaksaffären har de bästa presenterna. Glöm inte den till ditt eget kalas!'} ] },
 
  { name:'Festtorget', seed:71, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b2d0',flower:'#ffd24a',terrain:'festival',
    houses:[
@@ -550,7 +561,7 @@ function update(dt){
   // pick up world coins
   (worldCoins[sceneIndex]||[]).forEach((co,idx)=>{const key=sceneIndex+'_'+idx;if(coinsTaken[key])return;
     const cx=co.c*TS+TS/2,cy=co.r*TS+TS/2;
-    if(Math.hypot(player.x-cx,player.y-cy)<22){coinsTaken[key]=true;addCoins(6);}});
+    if(Math.hypot(player.x-cx,player.y-cy)<22){coinsTaken[key]=true;addCoins(6);coinPickups++;}});
 
   const hint=document.getElementById('hint');
   if(interactTarget){hint.style.display='block';
@@ -560,7 +571,7 @@ function update(dt){
   } else hint.style.display='none';
 
   // clock
-  const cur=Math.floor(7*60+(20*60-7*60)*(1-timeLeft/TOTAL_TIME));
+  const cur=Math.floor(8*60+(12*60-8*60)*(1-timeLeft/TOTAL_TIME));
   document.getElementById('clockTime').textContent=String(Math.floor(cur/60)).padStart(2,'0')+':'+String(cur%60).padStart(2,'0');
   document.getElementById('timeLeft').textContent=fmt(timeLeft)+' kvar';
 }
@@ -573,7 +584,7 @@ function handleAction(){
   if(state!=='play'||!interactTarget)return;
   if(interactTarget.type==='shop'){openShop(interactTarget.key);return;}
   if(interactTarget.type==='cat'){
-    if(quests.cat==='active'){quests.cat='found';openDialog('Misse 🐱','Mjau! Du hittade Misse! Ta henne tillbaka till Granne Stina i Olivias kvarter (längst åt vänster).');}
+    if(quests.cat==='active'){quests.cat='found';openDialog('Misse 🐱','Mjau! Du hittade Misse! Ta henne tillbaka till Stina i Olivias kvarter (längst åt vänster).');}
     else openDialog('Katt 🐱','En söt katt sitter och spinner. Kanske letar någon efter den?');
     return;
   }
@@ -583,7 +594,7 @@ function questTalk(n){
   if(n.win){ if(allGot())winGame();
     else openDialog('Mamma','Du är inte klar än! 🛍️ Du saknar: '+list.filter(i=>!i.got).map(i=>i.label).join(', ')+'. Skynda dig!');
     return; }
-  if(n.name==='Granne Stina'){
+  if(n.name==='Stina'){
     if(quests.cat==='none'){quests.cat='active';openDialog(n.name,'Åh nej! Min katt Misse har sprungit bort — jag tror hon är i Stadsparken (åt höger). Hittar du henne får du 30 mynt! 🐱');}
     else if(quests.cat==='active')openDialog(n.name,'Har du hittat Misse än? Leta i Stadsparken!');
     else if(quests.cat==='found'){quests.cat='done';addCoins(30);openDialog(n.name,'Misse! ❤️ Tack så mycket, Olivia! Här är 30 mynt som tack.');}
@@ -671,18 +682,42 @@ function drawMini(g,x,y,col,sad){
 }
 function winGame(){state='end';hide('hud');drawEndScene(true);
   document.getElementById('endTitle').textContent='🎉 Du klarade det!';
-  document.getElementById('endText').textContent='Olivia hann handla allt på listan! På kvällen fylldes huset av ballonger, tårta och glada kalasgäster. Det blev stadens bästa födelsedagsfest! ⭐ (Klart på '+fmt(TOTAL_TIME-timeLeft)+')';
+  document.getElementById('endText').textContent='Olivia hann hem med allt precis innan klockan slog 12! Huset fylldes av ballonger, tårta och glada vänner. Det blev stadens bästa födelsedagskalas! 🎉';
+  // ---- POÄNG ----
+  const questsDone=(quests.cat==='done'?1:0)+(quests.bread==='done'?1:0);
+  const base=1000;
+  const timeBonus=Math.floor(timeLeft)*10;       // snabbhet
+  const questBonus=questsDone*500;               // uppdrag
+  const coinBonus=coinPickups*100;               // plockade mynt
+  const total=base+timeBonus+questBonus+coinBonus;
+  const stars=total>=4000?3:total>=2800?2:1;
+  const rad=(t,v)=>'<div style="display:flex;justify-content:space-between;max-width:300px;margin:2px auto;"><span>'+t+'</span><b style="color:#ffe27a">'+v+'</b></div>';
+  document.getElementById('endScore').innerHTML=
+    '<div style="font-size:30px;letter-spacing:4px;">'+'⭐'.repeat(stars)+'☆'.repeat(3-stars)+'</div>'+
+    rad('🏁 Klarade kalaset','+'+base)+
+    rad('⏱️ Tid kvar ('+fmt(timeLeft)+')','+'+timeBonus)+
+    rad('🎯 Sidouppdrag ('+questsDone+'/2)','+'+questBonus)+
+    rad('💰 Plockade mynt ('+coinPickups+')','+'+coinBonus)+
+    '<div style="border-top:2px solid rgba(255,255,255,.3);margin:8px auto 0;max-width:300px;padding-top:6px;font-size:22px;display:flex;justify-content:space-between;"><span>POÄNG</span><b style="color:#9be37a">'+total+'</b></div>';
   show('endView');}
 function loseGame(){state='end';hide('hud');drawEndScene(false);
-  document.getElementById('endTitle').textContent='⏰ Tiden tog slut...';
-  document.getElementById('endText').textContent='Affärerna stängde innan Olivia blev klar. Kalaset blev inställt och gästerna gick hem ledsna. Du saknade: '+(list.filter(i=>!i.got).map(i=>i.label).join(', ')||'inget')+'. Försök igen — du fixar det! 💪';
+  document.getElementById('endTitle').textContent='⏰ Klockan slog 12...';
+  document.getElementById('endScore').innerHTML='';
+  document.getElementById('endText').textContent='Klockan slog 12 innan Olivia hann hem med allt. Kalaset hann inte bli klart och gästerna blev ledsna. Du saknade: '+(list.filter(i=>!i.got).map(i=>i.label).join(', ')||'inget')+'. Försök igen — du fixar det! 💪';
   show('endView');}
 
 // ===================== MENU / INPUT =====================
 function show(id){document.getElementById(id).classList.remove('hidden');}
 function hide(id){document.getElementById(id).classList.add('hidden');}
 const isTouch=('ontouchstart'in window)||navigator.maxTouchPoints>0;
-if(isTouch)document.getElementById('touch').style.display='block';
+if(isTouch){document.getElementById('touch').style.display='block';document.body.classList.add('touch');}
+function checkOrient(){document.body.classList.toggle('portrait',window.innerHeight>window.innerWidth);updateRotate();}
+function updateRotate(){
+  const portrait=window.innerHeight>window.innerWidth;
+  const playing=(state==='play'||state==='dialog'||state==='shop');
+  document.getElementById('rotate').classList.toggle('on', isTouch&&portrait&&playing);
+}
+window.addEventListener('resize',checkOrient);window.addEventListener('orientationchange',checkOrient);checkOrient();
 
 document.getElementById('btnStart').onclick=startGame;
 document.getElementById('btnHow').onclick=()=>show('howto');
@@ -696,7 +731,7 @@ function startGame(){hide('menu');show('hud');state='play';
   timeLeft=TOTAL_TIME;sceneIndex=0;coins=90;notifiedDone=false;
   player.x=8*TS;player.y=9*TS;player.dir='down';
   list.forEach(i=>i.got=false);for(const k in owned)delete owned[k];
-  quests.cat='none';quests.bread='none';for(const k in coinsTaken)delete coinsTaken[k];
+  quests.cat='none';quests.bread='none';coinPickups=0;for(const k in coinsTaken)delete coinsTaken[k];
   document.getElementById('coins').textContent=coins;renderList();
   openDialog('Mamma',scenes[0].npcs[0].line);}
 
@@ -711,7 +746,7 @@ document.getElementById('actBtn').addEventListener('touchstart',e=>{e.preventDef
 document.getElementById('actBtn').addEventListener('mousedown',e=>{e.preventDefault();handleAction();});
 
 // ===================== LOOP =====================
-function loop(ts){const dt=Math.min(0.05,(ts-lastTs)/1000||0);lastTs=ts;update(dt);draw();requestAnimationFrame(loop);}
+function loop(ts){const dt=Math.min(0.05,(ts-lastTs)/1000||0);lastTs=ts;update(dt);draw();updateRotate();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 })();
 </script>
