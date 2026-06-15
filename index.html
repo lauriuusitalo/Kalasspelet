@@ -126,7 +126,7 @@
     <div class="card">
       <h2>✨ Berättelsen</h2>
       <p>Idag fyller Olivia år, och klockan 12 börjar hennes eget födelsedagskalas!</p>
-      <p>Mamma har skrivit en lista med allt som behövs: en festklänning, en tårta, godispåsar, en present och ballonger.</p>
+      <p>Mamma har skrivit en lista med allt som behövs: en festklänning, en tårta, godispåsar, en piñata och ballonger.</p>
       <p>Men mamma har bara 90 mynt — och allt på listan kostar mer än så! Olivia måste plocka glittrande guldmynt och hjälpa sina vänner Wilma, Stina, Elisa och Alivia med små uppdrag för att tjäna ihop resten.</p>
       <p>Tiden är knapp — Olivia måste vara hemma med allt INNAN klockan slår 12, annars hinner festen inte bli klar och gästerna blir ledsna. Klarar du det blir det stadens bästa kalas! 🎉</p>
       <button class="btn" data-close="storyView">Tillbaka</button>
@@ -195,7 +195,7 @@ const list=[
   {id:'klanning',label:'👗 Festklänning',got:false},
   {id:'tarta',label:'🎂 Tårta',got:false},
   {id:'godis',label:'🍬 Godispåsar',got:false},
-  {id:'present',label:'🎁 Present',got:false},
+  {id:'present',label:'🪅 Piñata',got:false},
   {id:'ballong',label:'🎈 Ballonger',got:false},
 ];
 const owned={};
@@ -285,8 +285,8 @@ const shops={
    {id:'godis',name:'Godispåsar',price:20,listId:'godis',col:'#e85a8a'},
    {id:'frukt',name:'Fruktkorg',price:15,col:'#e0532e'},
    {id:'blommor',name:'Blombukett',price:18,col:'#ff6fae',mom:true}]},
- leksak:{name:'🧸 Leksaksaffären',desc:'Den perfekta presenten.',items:[
-   {id:'present',name:'Present',price:30,listId:'present',col:'#e03b2c'},
+ leksak:{name:'🧸 Leksaksaffären',desc:'Allt för kalaset — och en färgglad piñata!',items:[
+   {id:'present',name:'Piñata',price:30,listId:'present',col:'#3fa46d'},
    {id:'spel',name:'Tv-spel',price:35,col:'#3a3a55'},
    {id:'nalle',name:'Mjukis-nalle',price:18,col:'#b07a3a'}]},
  fest:{name:'🎈 Festbutiken',desc:'Allt för det perfekta kalaset!',items:[
@@ -304,7 +304,7 @@ const scenes=[
      {tx:20,ty:5,tw:4,th:3,wall:'#d8c0e0',roof:'#7c4dd6',name:'Granne'} ],
    npcs:[
      {x:10*TS,y:10*TS,pal:'mamma',name:'Mamma',dir:'down',win:true,
-      line:'Grattis på födelsedagen, Olivia! 🎂 Ditt kalas börjar klockan 12 — men vi måste handla allt först! På listan: festklänning, tårta, godispåsar, present och ballonger. Jag kunde bara ge dig 90 mynt — det räcker inte! Plocka mynt och hjälp folk i stan för att tjäna mer. Var hemma INNAN klockan slår 12 — du har 5 minuter! Skynda dig.'},
+      line:'Grattis på födelsedagen, Olivia! 🎂 Ditt kalas börjar klockan 12 — men vi måste handla allt först! På listan: festklänning, tårta, godispåsar, piñata och ballonger. Jag kunde bara ge dig 90 mynt — det räcker inte! Plocka mynt och hjälp folk i stan för att tjäna mer. Var hemma INNAN klockan slår 12 — du har 5 minuter! Skynda dig.'},
      {x:17*TS,y:9*TS,pal:'girl',name:'Wilma',dir:'left',
       line:'*snyft* 😿 Hej bästis...'} ] },
 
@@ -335,7 +335,7 @@ const scenes=[
      {tx:3,ty:2,tw:5,th:4,wall:'#cfeaf0',roof:'#1f9e8a',name:'Leksaksaffär',shop:'leksak'} ],
    npcs:[
      {x:9*TS,y:9*TS,pal:'girl',name:'Alivia',dir:'right',
-      line:'Grattis Olivia! 🎁 Leksaksaffären har de bästa presenterna. Glöm inte den till ditt eget kalas!'} ] },
+      line:'Grattis Olivia! 🪅 Leksaksaffären har de finaste piñatorna. En sådan får inte saknas på ditt kalas!'} ] },
 
  { name:'Festtorget', seed:71, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b2d0',flower:'#ffd24a',terrain:'festival',
    houses:[
@@ -663,7 +663,7 @@ function handleAction(){
   if(state!=='play'||!interactTarget)return;
   if(interactTarget.type==='shop'){openShop(interactTarget.key);return;}
   if(interactTarget.type==='cat'){
-    if(quests.cat==='active'){quests.cat='found';openDialog('Nala 🐱','Mjau! Du hittade den vita katten Nala! Ta honom tillbaka till Wilma i Olivias kvarter (längst åt vänster).');}
+    if(quests.cat==='active'){quests.cat='found';openDialog('Nala 🐱','Mjau! Du hittade den vita kattjejen Nala! Ta henne tillbaka till Wilma i Olivias kvarter (längst åt vänster).');}
     else openDialog('Vit katt 🐱','En söt vit katt sitter och spinner. Kanske letar någon efter den?');
     return;
   }
@@ -679,9 +679,9 @@ function questTalk(n){
     else openDialog('Mamma','Du är inte klar än! 🛍️ Du saknar: '+list.filter(i=>!i.got).map(i=>i.label).join(', ')+'. Skynda dig!');
     return; }
   if(n.name==='Wilma'){
-    if(quests.cat==='none'){quests.cat='active';openDialog(n.name,'*snyft* 😿 Olivia! Min vita katt Nala har sprungit bort — jag tror han är i Stadsparken (åt höger). Snälla, kan du leta? Du får 30 mynt!');}
-    else if(quests.cat==='active')openDialog(n.name,'*snyft* Har du hittat Nala än? Han är nog kvar i Stadsparken... 😢');
-    else if(quests.cat==='found'){quests.cat='done';addCoins(30);openDialog(n.name,'MÅNS! 😺 *kramar katten och torkar tårarna* Tack snälla Olivia, du räddade min dag! Här är 30 mynt. Nu ser jag fram emot ditt kalas! 💖');}
+    if(quests.cat==='none'){quests.cat='active';openDialog(n.name,'*snyft* 😿 Olivia! Min vita katt Nala har sprungit bort — jag tror hon är i Stadsparken (åt höger). Snälla, kan du leta? Du får 30 mynt!');}
+    else if(quests.cat==='active')openDialog(n.name,'*snyft* Har du hittat Nala än? Hon är nog kvar i Stadsparken... 😢');
+    else if(quests.cat==='found'){quests.cat='done';addCoins(30);openDialog(n.name,'NALA! 😺 *kramar katten och torkar tårarna* Tack snälla Olivia, du räddade min dag! Här är 30 mynt. Nu ser jag fram emot ditt kalas! 💖');}
     else openDialog(n.name,'Tack igen för att du hittade Nala! 😺 Bästa födelsedagsbarnet!');
     return;
   }
@@ -737,6 +737,18 @@ function openDialog(name,text){prevState=state==='shop'?'play':state;state='dial
 function closeDialog(){hide('dialog');state='play';}
 
 // ===================== WIN / LOSE =====================
+// rita spelets riktiga karaktärssprite på en valfri canvas-context
+function sprOn(g,mat,p,x,y,s,flip){
+  for(let r=0;r<mat.length;r++){const row=mat[r];
+    for(let c=0;c<row.length;c++){const ch=flip?row[row.length-1-c]:row[c];const col=p[ch];
+      if(col){g.fillStyle=col;g.fillRect((x+c*s)|0,(y+r*s)|0,s,s);}}}
+}
+function drawEndChar(g,palKey,cx,fy,sad){
+  const s=2,w=12*s,h=16*s,p=PAL[palKey];
+  g.fillStyle='rgba(0,0,0,.22)';g.beginPath();g.ellipse(cx,fy,11,3,0,0,7);g.fill();
+  sprOn(g,M_DOWN,p,cx-w/2,fy-h,s,false);
+  if(sad){g.fillStyle='#5bb0ff';g.fillRect(cx-5,fy-h+11,2,5);g.fillRect(cx+3,fy-h+11,2,5);}
+}
 function drawEndScene(win){
   const ec=document.getElementById('endCanvas'),g=ec.getContext('2d');g.imageSmoothingEnabled=false;
   g.clearRect(0,0,320,160);
@@ -773,14 +785,12 @@ function drawEndScene(win){
     g.fillStyle='#f6b5cf';g.fillRect(142,84,36,3);
     for(let i=0;i<4;i++){g.fillStyle='#ffd24a';g.fillRect(148+i*8,64,2,10);
       g.fillStyle='#e0532e';g.fillRect(148+i*8,60,2,4);}
-    // five happy guests: Olivia + Wilma + Stina + Elisa + Alivia
-    const gc=['#ef72a8','#f0c040','#3fa46d','#ef6a4a','#a06ae0'];
-    const gx=[26,66,250,288,108];
-    drawMini(g,26,119,gc[0]);   // Olivia
-    drawMini(g,62,119,gc[1]);   // Wilma
-    drawMini(g,250,119,gc[2]);  // Stina
-    drawMini(g,286,119,gc[3]);  // Elisa
-    drawMini(g,222,119,gc[4]);  // Alivia
+    // fem glada gäster ritade med spelets egna sprites
+    drawEndChar(g,'olivia',26,120);   // Olivia
+    drawEndChar(g,'girl',62,120);     // Wilma
+    drawEndChar(g,'girl',108,120);    // Alivia
+    drawEndChar(g,'granne',250,120);  // Stina
+    drawEndChar(g,'girl',286,120);    // Elisa
     // white cat + horse joining the party
     g.fillStyle='#f4f4f4';g.fillRect(92,110,12,7);g.fillRect(90,106,7,6);
     g.fillStyle='#ffb6cf';g.fillRect(90,103,2,3);g.fillRect(94,103,2,3);
@@ -791,7 +801,9 @@ function drawEndScene(win){
   } else {
     // rain + sad
     g.fillStyle='rgba(120,140,180,.5)';for(let i=0;i<40;i++){const rx=(i*37)%320,ry=(i*53+now*40)%120;g.fillRect(rx,ry,1,6);}
-    drawMini(g,90,118,'#888',true);drawMini(g,170,118,'#a87',true);drawMini(g,240,118,'#778',true);
+    drawEndChar(g,'olivia',80,120,true);
+    drawEndChar(g,'girl',160,120,true);
+    drawEndChar(g,'granne',240,120,true);
     g.fillStyle='#cfd';g.font='bold 13px Trebuchet MS';g.textAlign='center';g.fillText('Kalaset blev inställt...',160,142);
   }
 }
