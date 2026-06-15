@@ -283,12 +283,24 @@ const shops={
  mat:{name:'🛒 Mataffären',desc:'Tårta, godis och annat gott.',items:[
    {id:'tarta',name:'Födelsedagstårta',price:40,listId:'tarta',col:'#f6b5cf'},
    {id:'godis',name:'Godispåsar',price:20,listId:'godis',col:'#e85a8a'},
-   {id:'frukt',name:'Fruktkorg',price:15,col:'#e0532e'},
-   {id:'blommor',name:'Blombukett',price:18,col:'#ff6fae',mom:true}]},
+   {id:'frukt',name:'Fruktkorg',price:15,col:'#e0532e'}]},
  leksak:{name:'🧸 Leksaksaffären',desc:'Allt för kalaset — och en färgglad piñata!',items:[
    {id:'present',name:'Piñata',price:30,listId:'present',col:'#3fa46d'},
    {id:'spel',name:'Tv-spel',price:35,col:'#3a3a55'},
    {id:'nalle',name:'Mjukis-nalle',price:18,col:'#b07a3a'}]},
+ glasstand:{name:'🍦 Glasståndet',desc:'Krämig hemgjord glass! Unna dig — 30 mynt styck, köp så många du vill.',items:[
+   {id:'glass_jord',name:'Jordgubbsglass 🍓',price:30,repeat:true,col:'#f6b5cf'},
+   {id:'glass_chok',name:'Chokladglass 🍫',price:30,repeat:true,col:'#7a4a2a'},
+   {id:'glass_vanilj',name:'Vaniljglass 🍦',price:30,repeat:true,col:'#fff0b0'}]},
+ fruktstand:{name:'🍓 Bär & Frukt',desc:'Färska bär och frukter från trakten.',items:[
+   {id:'bar',name:'Bär',price:10,col:'#a83fd0'},
+   {id:'frukt2',name:'Frukt',price:12,col:'#e0532e'}]},
+ blomstand:{name:'💐 Blomståndet',desc:'Vackra handbundna buketter.',items:[
+   {id:'blommor',name:'Blombukett',price:18,mom:true,col:'#ff6fae'},
+   {id:'krans',name:'Blomkrans',price:14,col:'#ffd24a'}]},
+ smyckestand:{name:'💍 Handgjorda smycken',desc:'Unika halsband och armband.',items:[
+   {id:'halsband',name:'Halsband',price:15,col:'#f0c040'},
+   {id:'armband',name:'Armband',price:12,col:'#5be0e0'}]},
  fest:{name:'🎈 Festbutiken',desc:'Allt för det perfekta kalaset!',items:[
    {id:'ballong',name:'Ballonger',price:15,listId:'ballong',col:'#e0532e'},
    {id:'serpentin',name:'Serpentiner',price:12,col:'#3fa46d'},
@@ -308,16 +320,20 @@ const scenes=[
      {x:17*TS,y:9*TS,pal:'girl',name:'Wilma',dir:'left',
       line:'*snyft* 😿 Hej bästis...'} ] },
 
- { name:'Stora torget', seed:23, grass1:'#67ab53',grass2:'#5c9e49',path:'#b8b2a0',flower:'#ffd24a',terrain:'plaza',
-   pond:{tx:10,ty:8,tw:5,th:3},
-   houses:[
-     {tx:3,ty:2,tw:5,th:4,wall:'#f0d6e6',roof:'#c0398f',name:'Klädbutik',shop:'klader'},
-     {tx:17,ty:2,tw:4,th:3,wall:'#d6e0c0',roof:'#4f8a2e',name:'Café'} ],
+ { name:'Torghandeln', seed:23, grass1:'#67ab53',grass2:'#5c9e49',path:'#b8b2a0',flower:'#ffd24a',terrain:'plaza',
+   fountain:{cx:12.5*TS,cy:7*TS,tx:11,ty:5,tw:3,th:3},
+   stalls:[
+     {cx:4*TS,cy:5*TS,kind:'fruit',name:'Bär & Frukt',shop:'fruktstand'},
+     {cx:8*TS,cy:4*TS,kind:'flower',name:'Blommor',shop:'blomstand'},
+     {cx:17*TS,cy:4*TS,kind:'clothes',name:'Handgjorda kläder',shop:'klader'},
+     {cx:21*TS,cy:5*TS,kind:'jewel',name:'Smycken',shop:'smyckestand'},
+     {cx:13*TS,cy:12*TS,kind:'icecream',name:'Glasstånd',shop:'glasstand'} ],
+   houses:[],
    npcs:[
-     {x:7*TS,y:8*TS,pal:'keeper',name:'Butiksägare',dir:'down',
-      line:'Välkommen till klädbutiken! Vi har den finaste festklänningen i hela stan. Gå in genom dörren!'},
+     {x:10*TS,y:12*TS,pal:'keeper',name:'Glassförsäljaren',dir:'down',
+      line:'Smaka på min hemgjorda glass! 🍦 Bara 30 mynt — unna dig något gott på torget!'},
      {x:19*TS,y:9*TS,pal:'granne',name:'Stina',dir:'down',
-      line:'Grattis Olivia! 🎉 Jag kommer på ditt kalas. Glöm inte ballongerna — de säljs i festbutiken längst bort. 🎈'} ] },
+      line:'Grattis Olivia! 🎉 Vilket mysigt torg, eller hur? Festklänningen finns i klädeståndet. Och glöm inte ballongerna i festbutiken längst bort! 🎈'} ] },
 
  { name:'Marknadsgatan', seed:37, grass1:'#7bb44a',grass2:'#6fa83f',path:'#d2b074',flower:'#e0532e',terrain:'market',
    houses:[
@@ -368,6 +384,11 @@ function buildScene(i){
     }
     h.doorX=h.doorCol*TS+TS/2; h.doorY=(h.doorRow+1)*TS;
   });
+  // stalls block their table row
+  (sc.stalls||[]).forEach(st=>{const col=Math.floor(st.cx/TS),row=Math.floor((st.cy-12)/TS);
+    for(let c=col-1;c<=col+1;c++){if(row>=0&&row<ROWS&&c>=0&&c<COLS)blocked[row][c]=true;}});
+  // fountain blocked
+  if(sc.fountain){const f=sc.fountain;for(let r=f.ty;r<f.ty+f.th;r++)for(let c=f.tx;c<f.tx+f.tw;c++){if(r<ROWS&&c<COLS)blocked[r][c]=true;}}
   // trees: border line top + scattered
   function addTree(c,r){ if(r<0||r>=ROWS||c<0||c>=COLS)return; if(grid[r][c]!=='G')return; if(r>=9&&r<=10)return;
     blocked[r][c]=true; trees.push({c,r}); }
@@ -493,6 +514,48 @@ function drawCoin(x,y){
   ctx.fillStyle='#ffd84a';ctx.beginPath();ctx.ellipse(x,y+b,4,6,0,0,7);ctx.fill();
   ctx.fillStyle='#fff2a8';ctx.fillRect(x-1,y-3+b,2,6);
 }
+function drawFountain(f){
+  const x=f.cx,y=f.cy;
+  ctx.fillStyle='#8a8a7c';ctx.beginPath();ctx.ellipse(x,y+6,42,20,0,0,7);ctx.fill();
+  ctx.fillStyle='#9a9a8e';ctx.beginPath();ctx.ellipse(x,y,42,22,0,0,7);ctx.fill();
+  ctx.fillStyle='#3f8fce';ctx.beginPath();ctx.ellipse(x,y,33,16,0,0,7);ctx.fill();
+  ctx.fillStyle='#5fa6e0';ctx.beginPath();ctx.ellipse(x,y-1,33,15,0,0,7);ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;
+  for(let i=1;i<=2;i++){ctx.beginPath();ctx.ellipse(x,y,10*i+Math.sin(now*2)*2,5*i,0,0,7);ctx.stroke();}
+  ctx.fillStyle='#b5b5a8';ctx.fillRect(x-5,y-28,10,26);
+  ctx.fillStyle='#9a9a8e';ctx.fillRect(x-8,y-30,16,4);
+  ctx.fillStyle='#bfe3ff';
+  for(let i=0;i<7;i++){const a=now*3+i;const dx=Math.cos(a)*11;const dy=-Math.abs(Math.sin(a))*16-12;ctx.fillRect((x+dx)|0,(y+dy)|0,2,3);}
+  ctx.fillStyle='#dff3ff';ctx.fillRect(x-2,y-33,4,6);
+}
+function drawStallGoods(kind,x,ty){
+  if(kind==='fruit'){const cols=['#e0532e','#d8b020','#a83fd0','#e07a2e'];
+    for(let i=0;i<6;i++){ctx.fillStyle=cols[i%4];ctx.beginPath();ctx.arc(x-30+i*12,ty+4,4,0,7);ctx.fill();}}
+  else if(kind==='flower'){const cols=['#ef72a8','#ffd24a','#5b8def','#e0532e','#a06ae0'];
+    for(let i=0;i<6;i++){ctx.fillStyle='#2e7d2e';ctx.fillRect(x-30+i*12,ty,2,9);ctx.fillStyle=cols[i%5];ctx.beginPath();ctx.arc(x-29+i*12,ty,4,0,7);ctx.fill();}}
+  else if(kind==='clothes'){const cols=['#ef72a8','#5b8def','#4fae3c'];
+    for(let i=0;i<3;i++){ctx.fillStyle=cols[i];ctx.beginPath();ctx.moveTo(x-26+i*24,ty-4);ctx.lineTo(x-34+i*24,ty+10);ctx.lineTo(x-18+i*24,ty+10);ctx.closePath();ctx.fill();}}
+  else if(kind==='jewel'){const cols=['#f0c040','#5be0e0','#ef72a8','#a06ae0'];
+    for(let i=0;i<5;i++){ctx.fillStyle=cols[i%4];ctx.fillRect(x-28+i*12,ty+2,5,5);ctx.fillStyle='rgba(255,255,255,.6)';ctx.fillRect(x-27+i*12,ty+3,2,2);}}
+  else if(kind==='icecream'){const cols=['#f6b5cf','#fff0b0','#b5e3c0'];
+    for(let i=0;i<3;i++){ctx.fillStyle='#d8a05a';ctx.beginPath();ctx.moveTo(x-22+i*20,ty);ctx.lineTo(x-26+i*20,ty+10);ctx.lineTo(x-18+i*20,ty+10);ctx.closePath();ctx.fill();
+      ctx.fillStyle=cols[i];ctx.beginPath();ctx.arc(x-22+i*20,ty-2,5,0,7);ctx.fill();}}
+}
+function drawStall(st){
+  const x=st.cx,y=st.cy;
+  const kc={fruit:'#e0532e',flower:'#ef72a8',clothes:'#7c5cf0',jewel:'#f0c040',icecream:'#4fb0c9'}[st.kind]||'#e0532e';
+  ctx.fillStyle='#7a5230';ctx.fillRect(x-44,y-40,5,34);ctx.fillRect(x+39,y-40,5,34); // posts
+  ctx.fillStyle='#9a6b3a';ctx.fillRect(x-46,y-18,92,10); // table
+  ctx.fillStyle='#7d5328';ctx.fillRect(x-46,y-9,92,3);
+  drawStallGoods(st.kind,x,y-24);
+  ctx.fillStyle='#b98e5e';ctx.fillRect(x-44,y-44,88,5); // back board
+  for(let i=0;i<8;i++){ctx.fillStyle=i%2?kc:'#f3ece0';ctx.fillRect(x-48+i*12,y-60,12,16);} // awning
+  for(let i=0;i<8;i++){ctx.fillStyle=i%2?kc:'#f3ece0';ctx.beginPath();ctx.moveTo(x-48+i*12,y-44);ctx.lineTo(x-36+i*12,y-44);ctx.lineTo(x-42+i*12,y-38);ctx.closePath();ctx.fill();} // scallop
+  const sw=Math.max(70,st.name.length*7+12);
+  ctx.fillStyle='#3a2614';ctx.fillRect(x-sw/2,y-76,sw,14);
+  ctx.fillStyle='#f5e2b8';ctx.font='bold 11px Trebuchet MS';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(st.name,x,y-69);
+}
 function drawHouse(h){
   const x=h.tx*TS, y=h.ty*TS, w=h.tw*TS, hh=h.th*TS;
   const wallTop=y+hh*0.42;
@@ -548,6 +611,8 @@ function draw(){
     drawHorse(horseEntity.x,horseEntity.y);
   // depth-sorted: houses, trees, npcs, player by baseline Y
   const ents=[];
+  if(sc.fountain)ents.push({y:sc.fountain.cy,draw:()=>drawFountain(sc.fountain)});
+  (sc.stalls||[]).forEach(st=>ents.push({y:st.cy,draw:()=>drawStall(st)}));
   sc.houses.forEach(h=>ents.push({y:(h.ty+h.th)*TS,draw:()=>drawHouse(h)}));
   B.trees.forEach(t=>ents.push({y:(t.r+1)*TS,draw:()=>drawTree(t.c,t.r)}));
   sc.npcs.forEach(n=>ents.push({y:n.y,draw:()=>drawChar(PAL[n.pal],n.dir,false,0,n.x,n.y)}));
@@ -626,6 +691,9 @@ function update(dt){
   sc.houses.forEach(h=>{ if(!h.shop)return;
     const d=Math.hypot(player.x-h.doorX,player.y-h.doorY);
     if(d<46&&d<best){best=d;interactTarget={type:'shop',key:h.shop,name:h.name};}});
+  (sc.stalls||[]).forEach(st=>{
+    const d=Math.hypot(player.x-st.cx,player.y-st.cy);
+    if(d<56&&d<best){best=d;interactTarget={type:'shop',key:st.shop,name:st.name};}});
   sc.npcs.forEach(n=>{
     const d=Math.hypot(player.x-n.x,player.y-n.y);
     if(d<48&&d<best){best=d;interactTarget={type:'npc',npc:n};}});
@@ -643,7 +711,7 @@ function update(dt){
 
   const hint=document.getElementById('hint');
   if(interactTarget){hint.style.display='block';
-    hint.textContent= interactTarget.type==='shop'?('⭐ Mellanslag: gå in i '+interactTarget.name)
+    hint.textContent= interactTarget.type==='shop'?('⭐ Mellanslag: handla i '+interactTarget.name)
       :interactTarget.type==='cat'?'⭐ Mellanslag: klappa katten 🐱'
       :interactTarget.type==='horse'?'⭐ Mellanslag: fånga hästen 🐴'
       :'⭐ Mellanslag: prata med '+interactTarget.npc.name;
@@ -717,11 +785,12 @@ function renderShop(){const box=document.getElementById('shopItems');box.innerHT
     const btn=document.createElement('button');btn.className='buyBtn'+(own?' owned':'');
     btn.textContent=own?'✔ Köpt':'Köp';if(!own)btn.onclick=()=>buy(it);
     row.appendChild(btn);box.appendChild(row);});}
-function buy(it){if(owned[it.id])return;
-  if(coins<it.price){openDialog('Affärsbiträde','Oj, du har inte råd med det just nu. 💰');return;}
-  coins-=it.price;owned[it.id]=true;
-  if(it.mom)bonusMom=true;
-  if(it.listId){const li=list.find(l=>l.id===it.listId);if(li)li.got=true;}
+function buy(it){if(!it.repeat&&owned[it.id])return;
+  if(coins<it.price){openDialog('Försäljare','Oj, du har inte råd med det just nu. 💰');return;}
+  coins-=it.price;
+  if(!it.repeat){owned[it.id]=true;
+    if(it.mom)bonusMom=true;
+    if(it.listId){const li=list.find(l=>l.id===it.listId);if(li)li.got=true;}}
   document.getElementById('coins').textContent=coins;renderList();renderShop();
   if(allGot()&&!notifiedDone){notifiedDone=true;
     setTimeout(()=>openDialog('💡 Tips','Du har allt på listan! Spring hem till mamma (åt vänster, plats 1) innan tiden tar slut! 🏠'),250);}}
