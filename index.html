@@ -56,6 +56,9 @@
   .card h2{margin-bottom:10px;color:#ffd86b;}
   .card p{font-size:15px;line-height:1.5;margin-bottom:8px;}
   .hidden{display:none!important;}
+  #diffSel{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;justify-content:center;}
+  .diffBtn{padding:9px 14px;border:2px solid rgba(255,255,255,.3);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-size:14px;font-weight:bold;cursor:pointer;}
+  .diffBtn.sel{background:linear-gradient(#a78bfa,#7c5cf0);border-color:#fff;}
   #dialog{justify-content:flex-end;padding-bottom:30px;background:transparent;pointer-events:none;}
   #dialogBox{pointer-events:auto;}
   .shopItem{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 14px;margin:8px 0;}
@@ -64,12 +67,15 @@
   .buyBtn{padding:8px 14px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;background:linear-gradient(#9be37a,#4fae3c);color:#073;box-shadow:0 3px 0 #2e7a22;}
   .buyBtn.owned{background:#555;color:#bbb;box-shadow:none;cursor:default;}
   #coins{color:#ffe27a;font-weight:bold;}
+  #soundBtn{position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:12;width:34px;height:34px;border-radius:50%;background:rgba(20,12,40,.72);border:2px solid rgba(255,255,255,.32);color:#fff;font-size:16px;cursor:pointer;padding:0;line-height:1;}
   #hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(20,12,40,.82);color:#fff;padding:6px 14px;border-radius:20px;font-size:14px;border:2px solid rgba(255,255,255,.25);display:none;}
 </style>
 </head>
 <body>
 <div id="wrap">
   <canvas id="game" width="800" height="448"></canvas>
+  <audio id="bgm" src="pixel-pathfinder.mp3" loop preload="auto"></audio>
+  <button id="soundBtn" title="Musik på/av">🔊</button>
 
   <div id="hud" class="hidden">
     <div class="panel" id="clock"><span id="clockTime">08:00</span><br><small id="timeLeft">05:00 kvar</small></div>
@@ -101,9 +107,19 @@
   <div id="menu" class="overlay">
     <h1>Olivia &amp;<br>Födelsedagskalaset</h1>
     <div class="sub">Det är Olivias födelsedag! Hjälp henne handla allt på listan och vara hemma innan klockan slår 12, då kalaset börjar. Pengarna räcker inte… tjäna mer genom att hitta mynt och hjälpa vännerna. Du har bara 5 minuter!</div>
+    <div style="font-size:13px;opacity:.9;margin-bottom:6px;">Välj svårighetsgrad:</div>
+    <div id="diffSel">
+      <button class="diffBtn" data-d="easy">Lätt · 9 min</button>
+      <button class="diffBtn sel" data-d="normal">Normal · 7 min</button>
+      <button class="diffBtn" data-d="hard">Svår · 5 min</button>
+    </div>
     <button class="btn" id="btnStart">▶ Starta spel</button>
     <button class="btn alt" id="btnHow">📖 Instruktioner</button>
     <button class="btn alt" id="btnStory">✨ Berättelsen</button>
+    <div style="margin-top:22px;font-size:13px;opacity:.8;line-height:1.5;">
+      💡 Spelidé av Olivia &amp; Lauri<br>
+      🛠️ Utvecklat med Claude Cowork av Lauri &amp; Olivia
+    </div>
   </div>
 
   <div id="howto" class="overlay hidden">
@@ -111,7 +127,9 @@
       <h2>📖 Så spelar du</h2>
       <p>🕹️ Gå med <b>piltangenterna</b> (eller pilknapparna på mobil).</p>
       <p>⭐ Tryck <b>mellanslag</b> (eller OK) för att prata med folk och gå in i affärer.</p>
-      <p>🗺️ Gå mot vänster/höger kant för att resa mellan stadens 5 platser.</p>
+      <p>🗺️ Gå mot kanterna (vänster, höger, upp, ner!) för att resa mellan platserna. Leta efter pilar ▲▼◀▶ — vissa leder till dolda bonusrum med extrapoäng!</p>
+      <p>🎚️ Välj svårighetsgrad i menyn (Lätt/Normal/Svår = olika tid). Dina rekord sparas!</p>
+      <p>🔑 Vissa vägar är låsta — hitta nyckeln och be rätt person öppna grinden.</p>
       <p>🛒 I varje affär kan du köpa olika saker. Köp det som står på <b>Mammas lista</b> (★).</p>
       <p>💰 <b>Pengarna räcker inte!</b> Plocka guldmynt som glittrar i världen och hjälp folk med små uppdrag för att tjäna mer.</p>
       <p>🐱 Tips: Wilma har tappat bort sin vita katt, Elisas häst har rymt, och Bagaren behöver hjälp med en leverans. Varje uppdrag ger 30 mynt!</p>
@@ -170,22 +188,29 @@ ctx.imageSmoothingEnabled=false;
 const TS=32, COLS=25, ROWS=14, W=COLS*TS, H=ROWS*TS;
 
 // ===================== STATE =====================
-const TOTAL_TIME=5*60;
+const DIFF={easy:{time:9*60,label:'Lätt'},normal:{time:7*60,label:'Normal'},hard:{time:5*60,label:'Svår'}};
+let difficulty='normal';
+let TOTAL_TIME=DIFF[difficulty].time;
 let state='menu';
 let timeLeft=TOTAL_TIME, lastTs=0, coins=90, sceneIndex=0;
-const quests={cat:'none',bread:'none',horse:'none'};
+const quests={cat:'none',bread:'none',horse:'none',letter:'none',backpack:'none',gateKey:'none',gate:'closed'};
 const coinsTaken={};
 let coinPickups=0;
 let bonusMom=false;
+let bonusPoints=0;
 const catEntity={scene:3,x:18*TS,y:12*TS};
 const horseEntity={scene:4,x:14*TS,y:12*TS};
-// guldmynt utspridda i världen (6 mynt á 6 mynt). Räcker EJ till listan utan sidouppdrag.
+const backpackEntity={scene:2,x:13*TS,y:7*TS};   // Pappa Lauris bortglömda ryggsäck på marknaden
+const keyEntity={scene:3,x:21*TS,y:3*TS};        // gömd nyckel vid trädet i parken
+// guldmynt utspridda i världen (6 mynt styck) — vissa gömda bakom träd/hus
 const worldCoins=[
-  [{c:20,r:12}],
-  [{c:22,r:12}],
-  [{c:18,r:12}],
-  [{c:6,r:12},{c:22,r:11}],
-  [{c:20,r:12}],
+  [{c:20,r:12},{c:4,r:3}],
+  [{c:22,r:12},{c:2,r:6}],
+  [{c:18,r:12},{c:16,r:3}],
+  [{c:6,r:12},{c:22,r:11},{c:9,r:3}],
+  [{c:20,r:12},{c:5,r:3}],
+  [{c:5,r:5},{c:19,r:5},{c:12,r:9},{c:4,r:11},{c:20,r:11}], // bonus: Hemlig trädgård
+  [{c:6,r:6},{c:18,r:6},{c:12,r:11}],                       // bonus: Mysig bakgård
 ];
 let now=0; // animation time
 const keys={};
@@ -346,12 +371,15 @@ const scenes=[
       line:'Grattis Olivia! 😊 Vi ses på ditt kalas. Skynda dig så hinner du handla allt innan klockan 12!'} ] },
 
  { name:'Stadsparken', seed:53, grass1:'#4f9e44',grass2:'#458a3b',path:'#c2a86a',flower:'#5b8def',terrain:'park',
-   pond:{tx:14,ty:7,tw:6,th:4},
+   pond:{tx:1,ty:11,tw:4,th:3},
+   gateNorth:true,
    houses:[
      {tx:3,ty:2,tw:5,th:4,wall:'#cfeaf0',roof:'#1f9e8a',name:'Leksaksaffär',shop:'leksak'} ],
    npcs:[
      {x:9*TS,y:9*TS,pal:'girl',name:'Alivia',dir:'right',
-      line:'Grattis Olivia! 🪅 Leksaksaffären har de finaste piñatorna. En sådan får inte saknas på ditt kalas!'} ] },
+      line:'Grattis Olivia! 🪅 Leksaksaffären har de finaste piñatorna. En sådan får inte saknas på ditt kalas!'},
+     {x:13*TS,y:5*TS,pal:'keeper',name:'Trädgårdsvakten',dir:'down',
+      line:'Bakom grinden där uppe ligger en hemlig trädgård full med bonuspoäng! Men jag tappade min nyckel... den ligger nog vid det stora trädet uppe till höger.'} ] },
 
  { name:'Festtorget', seed:71, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b2d0',flower:'#ffd24a',terrain:'festival',
    houses:[
@@ -359,8 +387,30 @@ const scenes=[
      {tx:17,ty:2,tw:4,th:3,wall:'#fff0c0',roof:'#e0a800',name:'Tält'} ],
    npcs:[
      {x:11*TS,y:9*TS,pal:'host',name:'Festfixaren',dir:'down',
-      line:'Ballonger, serpentiner och ljus — allt för festen finns här inne! Ha det så kul i kväll! 🎊'} ] },
+      line:'Ballonger, serpentiner och ljus — allt för festen finns här inne! Ha det så kul i kväll! 🎊'},
+     {x:18*TS,y:11*TS,pal:'boy',name:'Pappa Lauri',dir:'left',
+      line:'Åh nej, jag har tappat min ryggsäck på Marknadsgatan! 🎒 Det ligger något viktigt i den. Hittar du den får du 25 mynt — och då kan jag komma på ditt kalas!'} ] },
+
+ { name:'Hemlig trädgård', seed:90, grass1:'#5fb86a',grass2:'#53a85e',path:'#cdb27a',flower:'#ff7ec0',terrain:'garden',
+   bonus:true, houses:[], stalls:[],
+   npcs:[
+     {x:12*TS,y:5*TS,pal:'host',name:'Trädgårdsmästaren',dir:'down',bonus:true,
+      line:'Du hittade den hemliga trädgården! 🌸 Som belöning får du massor av bonuspoäng. Plocka mynten också!'} ] },
+
+ { name:'Mysig bakgård', seed:91, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b08a',flower:'#ffd24a',terrain:'garden',
+   bonus:true, houses:[], stalls:[],
+   npcs:[
+     {x:12*TS,y:7*TS,pal:'granne',name:'Mormor',dir:'down',bonus:true,
+      line:'Vad trevligt att du hittade hit till min bakgård! 🪙 Här gömmer sig några mynt bland blommorna — och lite extra bonuspoäng till dig!'} ] },
 ];
+// scen-utgångar (vänster/höger/upp/ner) — gör världen 2D med dolda bonusrum
+scenes[0].exits={right:1};
+scenes[1].exits={left:0,right:2,down:6};
+scenes[2].exits={left:1,right:3};
+scenes[3].exits={left:2,right:4,up:5};
+scenes[4].exits={left:3};
+scenes[5].exits={down:3};
+scenes[6].exits={up:1};
 
 // build terrain + collision per scene (cached)
 const built=[];
@@ -392,7 +442,7 @@ function buildScene(i){
   // trees: border line top + scattered
   function addTree(c,r){ if(r<0||r>=ROWS||c<0||c>=COLS)return; if(grid[r][c]!=='G')return; if(r>=9&&r<=10)return;
     blocked[r][c]=true; trees.push({c,r}); }
-  for(let c=0;c<COLS;c+=2) addTree(c,0);
+  if(!(sc.exits&&sc.exits.up!=null)) for(let c=0;c<COLS;c+=2) addTree(c,0);
   const tdens= sc.terrain==='park'?14:6;
   for(let k=0;k<tdens;k++){addTree(2+Math.floor(R()*(COLS-4)),5+Math.floor(R()*4));}
   // bushes
@@ -528,6 +578,40 @@ function drawFountain(f){
   for(let i=0;i<7;i++){const a=now*3+i;const dx=Math.cos(a)*11;const dy=-Math.abs(Math.sin(a))*16-12;ctx.fillRect((x+dx)|0,(y+dy)|0,2,3);}
   ctx.fillStyle='#dff3ff';ctx.fillRect(x-2,y-33,4,6);
 }
+function drawBackpack(x,y){
+  const b=Math.sin(now*3)*1.5;
+  ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(x,y+8,9,3,0,0,7);ctx.fill();
+  ctx.fillStyle='#c0392b';ctx.fillRect(x-8,y-12+b,16,18); // väska
+  ctx.fillStyle='#9c2d22';ctx.fillRect(x-8,y-2+b,16,3);   // skugga
+  ctx.fillStyle='#e0532e';ctx.fillRect(x-6,y-16+b,12,6);  // topplock
+  ctx.fillStyle='#f0c040';ctx.fillRect(x-4,y-2+b,8,5);    // ficka
+  ctx.fillStyle='#5a2018';ctx.fillRect(x-1,y-12+b,2,16);  // remmar mitt
+  ctx.fillStyle='#3a1610';ctx.fillRect(x-7,y-1+b,2,2);ctx.fillRect(x+5,y-1+b,2,2); // spännen
+}
+function drawKey(x,y){
+  const b=Math.sin(now*3)*2;
+  ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.ellipse(x,y+6,6,2,0,0,7);ctx.fill();
+  ctx.fillStyle='#e8c84a';ctx.beginPath();ctx.arc(x-4,y-2+b,5,0,7);ctx.fill();
+  ctx.fillStyle='#caa11e';ctx.beginPath();ctx.arc(x-4,y-2+b,2,0,7);ctx.fill();
+  ctx.fillStyle='#e8c84a';ctx.fillRect(x-1,y-3+b,10,3);ctx.fillRect(x+7,y+b,2,4);ctx.fillRect(x+4,y+b,2,4);
+}
+function drawGate(open){
+  const gy=1.6*TS;
+  ctx.fillStyle='#7a5230';
+  for(let c=0;c<COLS;c++){ if(c>=11&&c<=13)continue;
+    const x=c*TS; ctx.fillRect(x+2,gy-6,TS-4,5);ctx.fillRect(x+2,gy+4,TS-4,5);
+    if(c%2===0)ctx.fillRect(x+TS/2-2,gy-12,4,24); }
+  ctx.fillStyle='#5a3618';ctx.fillRect(11*TS-2,gy-16,5,30);ctx.fillRect(14*TS-3,gy-16,5,30);
+  if(open){
+    ctx.fillStyle='#8a5a2b';ctx.fillRect(11*TS,gy-14,6,26);
+    ctx.fillStyle='#2e7d2e';ctx.font='bold 11px Trebuchet MS';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('▲ Hemlig trädgård',12.5*TS,gy-22);
+  } else {
+    ctx.fillStyle='#9a6a3a';ctx.fillRect(11*TS+3,gy-12,3*TS-8,6);ctx.fillRect(11*TS+3,gy+6,3*TS-8,6);
+    for(let i=0;i<5;i++){ctx.fillStyle='#9a6a3a';ctx.fillRect(11*TS+6+i*16,gy-12,4,24);}
+    ctx.fillStyle='#caa11e';ctx.beginPath();ctx.arc(12.5*TS,gy,3,0,7);ctx.fill();
+  }
+}
 function drawStallGoods(kind,x,ty){
   if(kind==='fruit'){const cols=['#e0532e','#d8b020','#a83fd0','#e07a2e'];
     for(let i=0;i<6;i++){ctx.fillStyle=cols[i%4];ctx.beginPath();ctx.arc(x-30+i*12,ty+4,4,0,7);ctx.fill();}}
@@ -609,8 +693,14 @@ function draw(){
   // runaway horse (before found)
   if(sceneIndex===horseEntity.scene && (quests.horse==='none'||quests.horse==='active'))
     drawHorse(horseEntity.x,horseEntity.y);
+  // gömd nyckel i parken
+  if(sceneIndex===keyEntity.scene && quests.gateKey==='none') drawKey(keyEntity.x,keyEntity.y);
+  // norra grinden i parken
+  if(sc.gateNorth) drawGate(quests.gate==='open');
   // depth-sorted: houses, trees, npcs, player by baseline Y
   const ents=[];
+  if(sceneIndex===backpackEntity.scene && quests.backpack==='active')
+    ents.push({y:backpackEntity.y,draw:()=>drawBackpack(backpackEntity.x,backpackEntity.y)});
   if(sc.fountain)ents.push({y:sc.fountain.cy,draw:()=>drawFountain(sc.fountain)});
   (sc.stalls||[]).forEach(st=>ents.push({y:st.cy,draw:()=>drawStall(st)}));
   sc.houses.forEach(h=>ents.push({y:(h.ty+h.th)*TS,draw:()=>drawHouse(h)}));
@@ -619,9 +709,10 @@ function draw(){
   ents.push({y:player.y,draw:()=>drawChar(PAL.olivia,player.dir,player.moving,player.step,player.x,player.y)});
   ents.sort((a,b)=>a.y-b.y);
   ents.forEach(e=>e.draw());
-  // cat / horse follow Olivia once found
+  // cat / horse / barn följer Olivia när de hittats
   if(quests.cat==='found') drawCat(player.x-22,player.y-2);
-  if(quests.horse==='found') drawHorse(player.x+26,player.y-2);
+  if(quests.horse==='found') drawHorse(player.x+30,player.y-2);
+  if(quests.backpack==='have') drawBackpack(player.x+22,player.y-6); // bär ryggsäcken
   // Wilma cries until cat is returned, then is happy
   const wil=sc.npcs.find(n=>n.name==='Wilma');
   if(wil){
@@ -646,15 +737,26 @@ function draw(){
   if(frac>0.6){ctx.fillStyle='rgba(40,30,95,'+(0.5*(frac-0.6)).toFixed(3)+')';ctx.fillRect(0,0,W,H);}
 
   // scene banner + arrows
-  ctx.fillStyle='rgba(20,12,40,.7)';ctx.fillRect(W/2-120,6,240,24);
-  ctx.fillStyle='#fff';ctx.font='bold 14px Trebuchet MS';
-  ctx.fillText('📍 '+sc.name+'  ('+(sceneIndex+1)+'/'+scenes.length+')',W/2,18);
+  const ex=sc.exits||{};
+  const label=sc.bonus?'★ Bonusrum':'('+(sceneIndex+1)+'/5)';
+  ctx.fillStyle='rgba(20,12,40,.7)';ctx.fillRect(W/2-120,34,240,24);
+  ctx.fillStyle='#fff';ctx.font='bold 14px Trebuchet MS';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('📍 '+sc.name+'  '+label,W/2,46);
   ctx.font='bold 22px Trebuchet MS';ctx.fillStyle='rgba(255,255,255,.85)';
-  if(sceneIndex<scenes.length-1)ctx.fillText('▶',W-16,H/2);
-  if(sceneIndex>0)ctx.fillText('◀',16,H/2);
+  if(ex.right!=null)ctx.fillText('▶',W-16,H/2);
+  if(ex.left!=null)ctx.fillText('◀',16,H/2);
+  if(ex.up!=null && !(sc.gateNorth&&quests.gate!=='open'))ctx.fillText('▲',W/2,72);
+  if(ex.down!=null)ctx.fillText('▼',W/2,H-12);
 }
 
 // ===================== UPDATE =====================
+function gotoScene(idx,edge){
+  sceneIndex=idx; buildScene(idx);
+  if(edge==='left')player.x=18;
+  else if(edge==='right')player.x=W-18;
+  else if(edge==='top')player.y=2.4*TS;
+  else if(edge==='bottom')player.y=(ROWS-1.2)*TS;
+}
 function blockedAt(px,py){
   const B=buildScene(sceneIndex);
   const c=Math.floor(px/TS), r=Math.floor(py/TS);
@@ -680,10 +782,16 @@ function update(dt){
     if(!blockedAt(player.x,ny)) player.y=ny;
     player.step+=dt*8;
   }
-  // bounds & transitions
-  player.y=Math.max(2*TS,Math.min((ROWS)*TS-6,player.y));
-  if(player.x>W-10){ if(sceneIndex<scenes.length-1){sceneIndex++;player.x=14;} else player.x=W-10; }
-  if(player.x<8){ if(sceneIndex>0){sceneIndex--;player.x=W-16;} else player.x=8; }
+  // bounds & transitions (4 riktningar)
+  const ex0=scenes[sceneIndex].exits||{};
+  const gateClosed=(scenes[sceneIndex].gateNorth && quests.gate!=='open');
+  const canUp=ex0.up!=null && !gateClosed;
+  if(player.x>W-10){ if(ex0.right!=null){gotoScene(ex0.right,'left');} else player.x=W-10; }
+  else if(player.x<8){ if(ex0.left!=null){gotoScene(ex0.left,'right');} else player.x=8; }
+  if(canUp && player.y<1*TS){ gotoScene(ex0.up,'bottom'); }
+  else if(ex0.down!=null && player.y>(ROWS-0.4)*TS){ gotoScene(ex0.down,'top'); }
+  else { const topLim=canUp?0.4*TS:2*TS, botLim=(ex0.down!=null)?(ROWS-0.1)*TS:(ROWS*TS-6);
+    player.y=Math.max(topLim,Math.min(botLim,player.y)); }
 
   // interaction detection
   interactTarget=null;let best=1e9;
@@ -703,17 +811,25 @@ function update(dt){
   if(sceneIndex===horseEntity.scene&&(quests.horse==='none'||quests.horse==='active')){
     const d=Math.hypot(player.x-horseEntity.x,player.y-horseEntity.y);
     if(d<54&&d<best){best=d;interactTarget={type:'horse'};}}
+  if(sceneIndex===backpackEntity.scene&&quests.backpack==='active'){
+    const d=Math.hypot(player.x-backpackEntity.x,player.y-backpackEntity.y);
+    if(d<48&&d<best){best=d;interactTarget={type:'backpack'};}}
+  if(sceneIndex===keyEntity.scene&&quests.gateKey==='none'){
+    const d=Math.hypot(player.x-keyEntity.x,player.y-keyEntity.y);
+    if(d<46&&d<best){best=d;interactTarget={type:'key'};}}
 
   // pick up world coins
   (worldCoins[sceneIndex]||[]).forEach((co,idx)=>{const key=sceneIndex+'_'+idx;if(coinsTaken[key])return;
     const cx=co.c*TS+TS/2,cy=co.r*TS+TS/2;
-    if(Math.hypot(player.x-cx,player.y-cy)<22){coinsTaken[key]=true;addCoins(6);coinPickups++;}});
+    if(Math.hypot(player.x-cx,player.y-cy)<22){coinsTaken[key]=true;addCoins(6);coinPickups++;sfx('coin');}});
 
   const hint=document.getElementById('hint');
   if(interactTarget){hint.style.display='block';
     hint.textContent= interactTarget.type==='shop'?('⭐ Mellanslag: handla i '+interactTarget.name)
       :interactTarget.type==='cat'?'⭐ Mellanslag: klappa katten 🐱'
       :interactTarget.type==='horse'?'⭐ Mellanslag: fånga hästen 🐴'
+      :interactTarget.type==='backpack'?'⭐ Mellanslag: ta upp ryggsäcken 🎒'
+      :interactTarget.type==='key'?'⭐ Mellanslag: ta nyckeln 🔑'
       :'⭐ Mellanslag: prata med '+interactTarget.npc.name;
   } else hint.style.display='none';
 
@@ -731,13 +847,21 @@ function handleAction(){
   if(state!=='play'||!interactTarget)return;
   if(interactTarget.type==='shop'){openShop(interactTarget.key);return;}
   if(interactTarget.type==='cat'){
-    if(quests.cat==='active'){quests.cat='found';openDialog('Nala 🐱','Mjau! Du hittade den vita kattjejen Nala! Ta henne tillbaka till Wilma i Olivias kvarter (längst åt vänster).');}
+    if(quests.cat==='active'){quests.cat='found';sfx('quest');openDialog('Nala 🐱','Mjau! Du hittade den vita kattjejen Nala! Ta henne tillbaka till Wilma i Olivias kvarter (längst åt vänster).');}
     else openDialog('Vit katt 🐱','En söt vit katt sitter och spinner. Kanske letar någon efter den?');
     return;
   }
   if(interactTarget.type==='horse'){
-    if(quests.horse==='active'){quests.horse='found';openDialog('Hästen 🐴','Gnägg! Du fångade den rymda hästen! Ta den tillbaka till Elisa på Marknadsgatan.');}
+    if(quests.horse==='active'){quests.horse='found';sfx('quest');openDialog('Hästen 🐴','Gnägg! Du fångade den rymda hästen! Ta den tillbaka till Elisa på Marknadsgatan.');}
     else openDialog('Häst 🐴','En vacker häst betar lugnt här. Den ser ut att ha rymt från någonstans...');
+    return;
+  }
+  if(interactTarget.type==='backpack'){
+    if(quests.backpack==='active'){quests.backpack='have';sfx('coin');openDialog('🎒 Ryggsäck','Du hittade en ryggsäck! Den är stängd och känns lite tung... Ta den till Pappa Lauri på Festtorget (längst åt höger).');}
+    return;
+  }
+  if(interactTarget.type==='key'){
+    quests.gateKey='have';sfx('coin');openDialog('🔑 Nyckel','Du hittade en gammal nyckel! Ge den till Trädgårdsvakten så öppnar hon grinden till den hemliga trädgården.');
     return;
   }
   questTalk(interactTarget.npc);
@@ -767,7 +891,35 @@ function questTalk(n){
     return;
   }
   if(n.name==='Festfixaren'&&quests.bread==='active'){
-    quests.bread='done';addCoins(30);openDialog(n.name,'Åh, färskt bröd från bagaren! Tack! 🍞 Här är 30 mynt för besväret.');
+    quests.bread='done';addCoins(30);sfx('quest');openDialog(n.name,'Åh, färskt bröd från bagaren! Tack! 🍞 Här är 30 mynt för besväret.');
+    return;
+  }
+  if(n.name==='Stina'){
+    if(quests.letter==='none'){quests.letter='active';openDialog(n.name,'Grattis Olivia! 💌 Kan du lämna det här brevet till Alivia i Stadsparken (åt höger)? Du får 25 mynt!');}
+    else if(quests.letter==='active')openDialog(n.name,'Brevet ska till Alivia i Stadsparken. Tack snälla! Och glöm inte ballongerna i festbutiken. 🎈');
+    else openDialog(n.name,'Tack för att du lämnade brevet! 💌 Vi ses på ditt kalas!');
+    return;
+  }
+  if(n.name==='Alivia'){
+    if(quests.letter==='active'){quests.letter='done';addCoins(25);sfx('quest');openDialog(n.name,'Ett brev från Stina! 💌 Tack Olivia, här är 25 mynt! Förresten — leksaksaffären har de finaste piñatorna. 🪅');return;}
+    openDialog(n.name,n.line);return;
+  }
+  if(n.name==='Pappa Lauri'){
+    if(quests.backpack==='none'){quests.backpack='active';openDialog(n.name,'Tack att du vill hjälpa! Jag tappade min ryggsäck på Marknadsgatan (åt vänster). Hittar du den och tar hit den får du 25 mynt! 🎒');}
+    else if(quests.backpack==='active')openDialog(n.name,'Min ryggsäck är nog kvar på Marknadsgatan. Snälla, leta efter den!');
+    else if(quests.backpack==='have'){quests.backpack='done';addCoins(25);sfx('quest');openDialog(n.name,'Min ryggsäck! 🎒 Tack snälla Olivia! Här är 25 mynt. *viskar för sig själv: nu kan jag ge henne presenten på kalaset...* 🤫 Vi ses i kväll!');}
+    else openDialog(n.name,'Tack igen! Vi ses på ditt kalas i kväll. 🎁');
+    return;
+  }
+  if(n.name==='Trädgårdsvakten'){
+    if(quests.gate==='open')openDialog(n.name,'Grinden är öppen — spring upp till den hemliga trädgården! 🌸');
+    else if(quests.gateKey==='have'){quests.gate='open';sfx('gate');openDialog(n.name,'Min nyckel! Tack! *låser upp grinden* 🔓 Nu kan du gå upp till den hemliga trädgården. 🌿');}
+    else openDialog(n.name,'Jag behöver min nyckel för att öppna grinden. Den ligger vid det stora trädet uppe till höger i parken. 🔑');
+    return;
+  }
+  if(n.bonus){
+    if(!n._claimed){n._claimed=true;bonusPoints+=600;sfx('quest');openDialog(n.name,n.line+' (+600 bonuspoäng!)');}
+    else openDialog(n.name,'Du har redan fått din bonus här. 😊 Utforska gärna mer av världen!');
     return;
   }
   openDialog(n.name,n.line);
@@ -787,7 +939,7 @@ function renderShop(){const box=document.getElementById('shopItems');box.innerHT
     row.appendChild(btn);box.appendChild(row);});}
 function buy(it){if(!it.repeat&&owned[it.id])return;
   if(coins<it.price){openDialog('Försäljare','Oj, du har inte råd med det just nu. 💰');return;}
-  coins-=it.price;
+  coins-=it.price;sfx('buy');
   if(!it.repeat){owned[it.id]=true;
     if(it.mom)bonusMom=true;
     if(it.listId){const li=list.find(l=>l.id===it.listId);if(li)li.got=true;}}
@@ -867,6 +1019,17 @@ function drawEndScene(win){
     g.fillStyle='#39301c';g.fillRect(208,94,8,2);g.fillRect(196,104,17,1); // man + ryggstrimma
     g.fillStyle='#efe3bf';g.fillRect(209,93,2,3);
     g.fillStyle='#140d06';g.fillRect(214,99,1,1);
+    // hemlig gitarr-present från Pappa Lauri (om ryggsäcken återlämnades)
+    if(quests.backpack==='done'){
+      drawEndChar(g,'boy',136,120); // Pappa Lauri
+      const gx=120,gy=104;
+      g.fillStyle='#b5651d';g.beginPath();g.ellipse(gx,gy,7,9,0,0,7);g.fill();
+      g.fillStyle='#8a4a12';g.beginPath();g.ellipse(gx,gy,4,6,0,0,7);g.fill();
+      g.fillStyle='#2a1a10';g.beginPath();g.arc(gx,gy,2.4,0,7);g.fill();
+      g.fillStyle='#7a4a23';g.fillRect(gx-1,gy-20,3,12);
+      g.fillStyle='#3a2613';g.fillRect(gx-2,gy-23,5,4);
+      g.fillStyle='#e8d0a0';for(let i=0;i<3;i++)g.fillRect(gx-1+i,gy-19,1,11);
+    }
   } else {
     // rain + sad
     g.fillStyle='rgba(120,140,180,.5)';for(let i=0;i<40;i++){const rx=(i*37)%320,ry=(i*53+now*40)%120;g.fillRect(rx,ry,1,6);}
@@ -883,30 +1046,37 @@ function drawMini(g,x,y,col,sad){
   g.fillStyle=sad?'#7a3030':'#c0504a';
   if(sad)g.fillRect(x-2,y-18,4,2);else g.fillRect(x-2,y-19,4,2);
 }
-function winGame(){state='end';hide('hud');drawEndScene(true);
+function winGame(){state='end';hide('hud');sfx('win');drawEndScene(true);
   document.getElementById('endTitle').textContent='🎉 Du klarade det!';
   document.getElementById('endText').textContent='Olivia hann hem med allt precis innan klockan slog 12! Huset fylldes av ballonger, tårta och glada vänner. Det blev stadens bästa födelsedagskalas! 🎉'+
+    (quests.backpack==='done'?' Pappa Lauri kom på kalaset och överraskade Olivia med sin hemliga present — en glittrande gitarr! 🎸':'')+
     (bonusMom?' Och Olivia kom själv på att köpa en blombukett till mamma — mamma blev överlycklig! 💐':'');
   // ---- POÄNG ----
-  const questsDone=(quests.cat==='done'?1:0)+(quests.bread==='done'?1:0)+(quests.horse==='done'?1:0);
+  const questsDone=['cat','bread','horse','letter','backpack'].filter(k=>quests[k]==='done').length;
   const base=1000;
   const timeBonus=Math.floor(timeLeft)*10;       // snabbhet
   const questBonus=questsDone*500;               // uppdrag
   const coinBonus=coinPickups*100;               // plockade mynt
   const momBonus=bonusMom?800:0;                 // hemlig present till mamma
-  const total=base+timeBonus+questBonus+coinBonus+momBonus;
-  const stars=total>=4500?3:total>=3000?2:1;
+  const total=base+timeBonus+questBonus+coinBonus+momBonus+bonusPoints;
+  const stars=total>=6500?3:total>=4500?2:1;
+  // highscore
+  let best=0;try{best=+localStorage.getItem('olivia_best_'+difficulty)||0;}catch(e){}
+  const isRecord=total>best;
+  if(isRecord){try{localStorage.setItem('olivia_best_'+difficulty,total);}catch(e){}}
   const rad=(t,v)=>'<div style="display:flex;justify-content:space-between;max-width:300px;margin:2px auto;"><span>'+t+'</span><b style="color:#ffe27a">'+v+'</b></div>';
   document.getElementById('endScore').innerHTML=
     '<div style="font-size:30px;letter-spacing:4px;">'+'⭐'.repeat(stars)+'☆'.repeat(3-stars)+'</div>'+
     rad('🏁 Klarade kalaset','+'+base)+
     rad('⏱️ Tid kvar ('+fmt(timeLeft)+')','+'+timeBonus)+
-    rad('🎯 Sidouppdrag ('+questsDone+'/3)','+'+questBonus)+
+    rad('🎯 Sidouppdrag ('+questsDone+'/5)','+'+questBonus)+
     rad('💰 Plockade mynt ('+coinPickups+')','+'+coinBonus)+
+    (bonusPoints?rad('🌸 Bonusrum','+'+bonusPoints):'')+
     (momBonus?rad('💐 Hemlig present till mamma','+'+momBonus):'')+
-    '<div style="border-top:2px solid rgba(255,255,255,.3);margin:8px auto 0;max-width:300px;padding-top:6px;font-size:22px;display:flex;justify-content:space-between;"><span>POÄNG</span><b style="color:#9be37a">'+total+'</b></div>';
+    '<div style="border-top:2px solid rgba(255,255,255,.3);margin:8px auto 0;max-width:300px;padding-top:6px;font-size:22px;display:flex;justify-content:space-between;"><span>POÄNG</span><b style="color:#9be37a">'+total+'</b></div>'+
+    (isRecord?'<div style="color:#ffd24a;font-weight:bold;margin-top:6px;">🏆 NYTT REKORD!</div>':'<div style="font-size:13px;opacity:.8;margin-top:6px;">Ditt rekord ('+DIFF[difficulty].label+'): '+best+'</div>');
   show('endView');}
-function loseGame(){state='end';hide('hud');drawEndScene(false);
+function loseGame(){state='end';hide('hud');sfx('lose');drawEndScene(false);
   document.getElementById('endTitle').textContent='⏰ Klockan slog 12...';
   document.getElementById('endScore').innerHTML='';
   document.getElementById('endText').textContent='Klockan slog 12 innan Olivia hann hem med allt. Kalaset hann inte bli klart och gästerna blev ledsna. Du saknade: '+(list.filter(i=>!i.got).map(i=>i.label).join(', ')||'inget')+'. Försök igen — du fixar det! 💪';
@@ -917,6 +1087,32 @@ function show(id){document.getElementById(id).classList.remove('hidden');}
 function hide(id){document.getElementById(id).classList.add('hidden');}
 const isTouch=('ontouchstart'in window)||navigator.maxTouchPoints>0;
 if(isTouch){document.getElementById('touch').style.display='block';document.body.classList.add('touch');}
+// ---- bakgrundsmusik ----
+const bgm=document.getElementById('bgm');bgm.volume=0.5;
+let musicOn=true;
+function setMusic(on){musicOn=on;document.getElementById('soundBtn').textContent=on?'🔊':'🔇';
+  if(on){bgm.play().catch(()=>{});}else{bgm.pause();}}
+document.getElementById('soundBtn').onclick=()=>setMusic(!musicOn);
+// ---- ljudeffekter (WebAudio) ----
+let actx=null;
+function sfx(type){
+  if(!musicOn)return;
+  try{ if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();
+    const t=actx.currentTime,o=actx.createOscillator(),g=actx.createGain();
+    o.connect(g);g.connect(actx.destination);
+    let f=440,dur=0.12,wave='square';
+    if(type==='coin'){f=880;dur=0.1;}
+    else if(type==='buy'){f=620;dur=0.12;}
+    else if(type==='quest'){f=660;dur=0.22;o.frequency.setValueAtTime(990,t+0.11);}
+    else if(type==='gate'){f=280;dur=0.3;wave='sawtooth';}
+    else if(type==='win'){f=660;dur=0.5;o.frequency.setValueAtTime(990,t+0.18);o.frequency.setValueAtTime(1320,t+0.34);}
+    else if(type==='lose'){f=200;dur=0.5;wave='sawtooth';o.frequency.setValueAtTime(140,t+0.25);}
+    o.type=wave;o.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.18,t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.start(t);o.stop(t+dur+0.03);
+  }catch(e){}
+}
 function checkOrient(){document.body.classList.toggle('portrait',window.innerHeight>window.innerWidth);updateRotate();}
 function updateRotate(){
   const portrait=window.innerHeight>window.innerWidth;
@@ -925,6 +1121,9 @@ function updateRotate(){
 }
 window.addEventListener('resize',checkOrient);window.addEventListener('orientationchange',checkOrient);checkOrient();
 
+document.querySelectorAll('.diffBtn').forEach(b=>b.onclick=()=>{
+  difficulty=b.dataset.d;TOTAL_TIME=DIFF[difficulty].time;
+  document.querySelectorAll('.diffBtn').forEach(x=>x.classList.toggle('sel',x===b));});
 document.getElementById('btnStart').onclick=startGame;
 document.getElementById('btnHow').onclick=()=>show('howto');
 document.getElementById('btnStory').onclick=()=>show('storyView');
@@ -934,15 +1133,22 @@ document.getElementById('shopClose').onclick=closeShop;
 document.getElementById('btnAgain').onclick=()=>location.reload();
 
 function startGame(){hide('menu');show('hud');state='play';
-  timeLeft=TOTAL_TIME;sceneIndex=0;coins=90;notifiedDone=false;
+  TOTAL_TIME=DIFF[difficulty].time;timeLeft=TOTAL_TIME;sceneIndex=0;coins=90;notifiedDone=false;
   player.x=8*TS;player.y=9*TS;player.dir='down';
   list.forEach(i=>i.got=false);for(const k in owned)delete owned[k];
-  quests.cat='none';quests.bread='none';quests.horse='none';coinPickups=0;bonusMom=false;for(const k in coinsTaken)delete coinsTaken[k];
+  quests.cat='none';quests.bread='none';quests.horse='none';
+  quests.letter='none';quests.backpack='none';quests.gateKey='none';quests.gate='closed';
+  coinPickups=0;bonusMom=false;bonusPoints=0;
+  scenes.forEach(s=>s.npcs.forEach(n=>{n._claimed=false;}));
+  for(const k in coinsTaken)delete coinsTaken[k];
   document.getElementById('coins').textContent=coins;renderList();
+  if(musicOn){bgm.currentTime=0;bgm.play().catch(()=>{});
+    try{if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();actx.resume&&actx.resume();}catch(e){}}
   openDialog('Mamma',scenes[0].npcs[0].line);}
 
 window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();
-  keys[e.key]=true;if(e.key===' ')handleAction();});
+  keys[e.key]=true;if(e.key===' ')handleAction();
+  if(e.key==='m'||e.key==='M')setMusic(!musicOn);});
 window.addEventListener('keyup',e=>{keys[e.key]=false;});
 document.querySelectorAll('#dpad button').forEach(b=>{const k=b.dataset.k;
   const on=e=>{e.preventDefault();keys[k]=true;};const off=e=>{e.preventDefault();keys[k]=false;};
