@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Olivia och Födelsedagskalaset</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Luckiest+Guy&display=swap');
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{height:100vh;height:100dvh;background:#0e0a18;font-family:"Trebuchet MS","Segoe UI",sans-serif;overflow:hidden;}
+  html,body{height:100vh;height:100dvh;background:#0e0a18;font-family:"Baloo 2","Trebuchet MS","Segoe UI",sans-serif;overflow:hidden;}
   #wrap{position:relative;width:100vw;height:100vh;height:100dvh;display:flex;align-items:flex-start;justify-content:center;}
   #game{background:#000;display:block;width:100%;height:100%;object-fit:contain;object-position:top center;image-rendering:pixelated;touch-action:none;}
   #hud{position:absolute;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;color:#fff;font-size:14px;z-index:5;gap:8px;}
@@ -46,9 +47,35 @@
   @keyframes tilt{0%,100%{transform:rotate(0)}50%{transform:rotate(90deg)}}
   #rotate h2{margin:18px 0 8px;color:#ffd86b;}
   .overlay{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;}
-  #menu{background:radial-gradient(circle at 50% 28%,#3c2566,#120c22);color:#fff;}
-  #menu h1{font-size:clamp(28px,7vw,54px);margin-bottom:6px;line-height:1.05;text-shadow:3px 3px 0 #000;background:linear-gradient(#ffd86b,#ff9ad1);-webkit-background-clip:text;background-clip:text;color:transparent;}
-  #menu .sub{font-size:16px;opacity:.85;margin-bottom:24px;max-width:540px;}
+  #menu{color:#fff;overflow:hidden;
+    background:
+      radial-gradient(circle at 18% 22%, rgba(255,210,63,.20), transparent 42%),
+      radial-gradient(circle at 84% 26%, rgba(58,208,200,.18), transparent 44%),
+      radial-gradient(circle at 50% 88%, rgba(255,93,143,.20), transparent 46%),
+      radial-gradient(circle, rgba(255,255,255,.10) 1.5px, transparent 2px) 0 0/46px 46px,
+      radial-gradient(circle at 50% 32%, #43217e 0%, #271257 55%, #160c34 100%);}
+  #menu h1{font-family:'Luckiest Guy',cursive;font-weight:400;font-size:clamp(36px,9vw,72px);line-height:1.02;letter-spacing:1.5px;margin-bottom:10px;
+    color:#ffd23f;
+    text-shadow:0 3px 0 #e0457f, 0 5px 0 #a82e62, 4px 4px 0 rgba(0,0,0,.30), 0 0 26px rgba(255,93,143,.55);
+    -webkit-text-stroke:2px #1c0f3e;paint-order:stroke fill;}
+  #menu .sub{font-size:16px;font-weight:600;color:#e9ddff;margin-bottom:22px;max-width:540px;text-shadow:0 1px 4px rgba(0,0,0,.4);}
+  .bunting{position:absolute;top:0;left:-12px;right:-12px;height:24px;z-index:1;pointer-events:none;
+    background:
+      linear-gradient(45deg, transparent 50%, #ff5d8f 50%),
+      linear-gradient(-45deg, #ff5d8f 50%, transparent 50%);
+    background-size:30px 24px;filter:drop-shadow(0 2px 1px rgba(0,0,0,.3));}
+  .bunting.b2{background-image:linear-gradient(45deg, transparent 50%, #3ad0c8 50%),linear-gradient(-45deg, #3ad0c8 50%, transparent 50%);background-position:15px 0;opacity:.85;}
+  .bunting.b3{background-image:linear-gradient(45deg, transparent 50%, #ffd23f 50%),linear-gradient(-45deg, #ffd23f 50%, transparent 50%);background-position:30px 0;opacity:.7;}
+  .balloon{position:absolute;width:44px;height:55px;border-radius:50% 50% 48% 48%;z-index:1;pointer-events:none;
+    box-shadow:inset -6px -8px 10px rgba(0,0,0,.18);animation:bob 4.5s ease-in-out infinite;}
+  .balloon::before{content:'';position:absolute;left:50%;top:99%;width:2px;height:46px;background:rgba(255,255,255,.35);transform:translateX(-50%);}
+  .balloon::after{content:'';position:absolute;left:14px;top:9px;width:9px;height:13px;border-radius:50%;background:rgba(255,255,255,.45);}
+  .balloon.l1{left:6%;top:16%;background:#ff5d8f;animation-delay:0s;}
+  .balloon.l2{left:13%;top:40%;background:#3ad0c8;animation-delay:.8s;width:36px;height:46px;}
+  .balloon.l3{right:7%;top:18%;background:#ffd23f;animation-delay:1.4s;}
+  .balloon.l4{right:14%;top:44%;background:#a78bfa;animation-delay:2s;width:36px;height:46px;}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-14px) rotate(4deg);}}
+  #menu h1,#menu .sub,#menu #diffSel,#menu .btn,#menu>div[style]{position:relative;z-index:2;}
   .btn{display:block;min-width:240px;margin:8px auto;padding:14px 20px;font-size:18px;font-weight:bold;border:none;border-radius:14px;cursor:pointer;color:#1a1228;background:linear-gradient(#ffe27a,#ffba49);box-shadow:0 4px 0 #b97e10;transition:transform .05s;}
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b97e10;}
   .btn.alt{background:linear-gradient(#a78bfa,#7c5cf0);color:#fff;box-shadow:0 4px 0 #4b2c9a;}
@@ -59,6 +86,9 @@
   #diffSel{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;justify-content:center;}
   .diffBtn{padding:9px 14px;border:2px solid rgba(255,255,255,.3);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-size:14px;font-weight:bold;cursor:pointer;}
   .diffBtn.sel{background:linear-gradient(#a78bfa,#7c5cf0);border-color:#fff;}
+  #shopMsg{margin:4px 0 8px;padding:9px 12px;border-radius:12px;font-weight:bold;font-size:14px;text-align:center;}
+  #shopMsg.ok{background:rgba(80,200,120,.22);border:2px solid #4fae3c;color:#d5f3cf;}
+  #shopMsg.warn{background:rgba(230,90,70,.28);border:2px solid #e0532e;color:#ffd5c8;}
   #dialog{justify-content:flex-end;padding-bottom:30px;background:transparent;pointer-events:none;}
   #dialogBox{pointer-events:auto;}
   .shopItem{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 14px;margin:8px 0;}
@@ -83,6 +113,7 @@
       <h4>🎀 MAMMAS LISTA</h4>
       <div id="listItems"></div>
       <div style="margin-top:4px;font-size:12px;">💰 <span id="coins">90</span> mynt</div>
+      <div style="margin-top:2px;font-size:12px;">⭐ <span id="score">0</span> p &nbsp;·&nbsp; 🏆 <span id="best">0</span></div>
     </div>
   </div>
 
@@ -105,8 +136,10 @@
   </div>
 
   <div id="menu" class="overlay">
+    <div class="bunting"></div><div class="bunting b2"></div><div class="bunting b3"></div>
+    <span class="balloon l1"></span><span class="balloon l2"></span><span class="balloon l3"></span><span class="balloon l4"></span>
     <h1>Olivia &amp;<br>Födelsedagskalaset</h1>
-    <div class="sub">Det är Olivias födelsedag! Hjälp henne handla allt på listan och vara hemma innan klockan slår 12, då kalaset börjar. Pengarna räcker inte… tjäna mer genom att hitta mynt och hjälpa vännerna. Du har bara 5 minuter!</div>
+    <div class="sub">Det är Olivias födelsedag! Hjälp henne handla allt på listan och komma hem innan klockan slår 12, då kalaset börjar. Pengarna räcker inte… tjäna mer genom att hitta mynt och hjälpa vännerna!</div>
     <div style="font-size:13px;opacity:.9;margin-bottom:6px;">Välj svårighetsgrad:</div>
     <div id="diffSel">
       <button class="diffBtn" data-d="easy">Lätt · 9 min</button>
@@ -117,8 +150,7 @@
     <button class="btn alt" id="btnHow">📖 Instruktioner</button>
     <button class="btn alt" id="btnStory">✨ Berättelsen</button>
     <div style="margin-top:22px;font-size:13px;opacity:.8;line-height:1.5;">
-      💡 Spelidé av Olivia &amp; Lauri<br>
-      🛠️ Utvecklat med Claude Cowork av Lauri &amp; Olivia
+      Av Olivia &amp; Lauri
     </div>
   </div>
 
@@ -163,6 +195,7 @@
     <div class="card" id="shopBox">
       <h2 id="shopName">Affär</h2>
       <p id="shopDesc" style="opacity:.85;font-size:14px;"></p>
+      <div id="shopMsg" style="display:none;"></div>
       <div id="shopItems"></div>
       <button class="btn alt" id="shopClose">Lämna affären</button>
     </div>
@@ -201,7 +234,7 @@ let bonusPoints=0;
 const catEntity={scene:3,x:18*TS,y:12*TS};
 const horseEntity={scene:4,x:14*TS,y:12*TS};
 const backpackEntity={scene:2,x:13*TS,y:7*TS};   // Pappa Lauris bortglömda ryggsäck på marknaden
-const keyEntity={scene:3,x:21*TS,y:3*TS};        // gömd nyckel vid trädet i parken
+const keyEntity={scene:4,x:2*TS,y:4*TS};         // gömd nyckel i ett hörn på Festtorget
 // guldmynt utspridda i världen (6 mynt styck) — vissa gömda bakom träd/hus
 const worldCoins=[
   [{c:20,r:12},{c:4,r:3}],
@@ -379,7 +412,7 @@ const scenes=[
      {x:9*TS,y:9*TS,pal:'girl',name:'Alivia',dir:'right',
       line:'Grattis Olivia! 🪅 Leksaksaffären har de finaste piñatorna. En sådan får inte saknas på ditt kalas!'},
      {x:13*TS,y:5*TS,pal:'keeper',name:'Trädgårdsvakten',dir:'down',
-      line:'Bakom grinden där uppe ligger en hemlig trädgård full med bonuspoäng! Men jag tappade min nyckel... den ligger nog vid det stora trädet uppe till höger.'} ] },
+      line:'Bakom grinden där uppe ligger Babuschka och Dieduschkas datcha — full med bonuspoäng! Men jag tappade min nyckel borta vid Festtorget...'} ] },
 
  { name:'Festtorget', seed:71, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b2d0',flower:'#ffd24a',terrain:'festival',
    houses:[
@@ -388,20 +421,27 @@ const scenes=[
    npcs:[
      {x:11*TS,y:9*TS,pal:'host',name:'Festfixaren',dir:'down',
       line:'Ballonger, serpentiner och ljus — allt för festen finns här inne! Ha det så kul i kväll! 🎊'},
-     {x:18*TS,y:11*TS,pal:'boy',name:'Pappa Lauri',dir:'left',
+     {x:18*TS,y:11*TS,pal:'boy',name:'Pappa',dir:'left',
       line:'Åh nej, jag har tappat min ryggsäck på Marknadsgatan! 🎒 Det ligger något viktigt i den. Hittar du den får du 25 mynt — och då kan jag komma på ditt kalas!'} ] },
 
- { name:'Hemlig trädgård', seed:90, grass1:'#5fb86a',grass2:'#53a85e',path:'#cdb27a',flower:'#ff7ec0',terrain:'garden',
-   bonus:true, houses:[], stalls:[],
+ { name:'Babuschkas datcha', seed:90, grass1:'#6db86a',grass2:'#5fa85e',path:'#cdb27a',flower:'#ff7ec0',terrain:'garden',
+   bonus:true, stalls:[],
+   houses:[{tx:1,ty:2,tw:4,th:4,wall:'#e3c08a',roof:'#9c5a2a',name:'Дача'}],
+   greenhouse:{tx:11,ty:2,tw:4,th:3},
+   fields:[{tx:6,ty:3,tw:4,th:2,kind:'carrot'},{tx:16,ty:3,tw:4,th:2,kind:'potato'}],
    npcs:[
-     {x:12*TS,y:5*TS,pal:'host',name:'Trädgårdsmästaren',dir:'down',bonus:true,
-      line:'Du hittade den hemliga trädgården! 🌸 Som belöning får du massor av bonuspoäng. Plocka mynten också!'} ] },
+     {x:8*TS,y:9*TS,pal:'granne',name:'Babuschka',dir:'down',bonus:true,
+      line:'Privet, Olivia! Grattis på födelsedagen! Välkommen till vår datcha med växthus och grönsaksland. Vi ser så fram emot ditt kalas!'},
+     {x:15*TS,y:10*TS,pal:'keeper',name:'Dieduschka',dir:'left',
+      line:'Grattis, lilla vän! Ta gärna lite potatis och morötter från landet. Vi kommer på kalaset!'} ] },
 
- { name:'Mysig bakgård', seed:91, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b08a',flower:'#ffd24a',terrain:'garden',
+ { name:'Farmors bakgård', seed:91, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b08a',flower:'#ffd24a',terrain:'garden',
    bonus:true, houses:[], stalls:[],
    npcs:[
-     {x:12*TS,y:7*TS,pal:'granne',name:'Mormor',dir:'down',bonus:true,
-      line:'Vad trevligt att du hittade hit till min bakgård! 🪙 Här gömmer sig några mynt bland blommorna — och lite extra bonuspoäng till dig!'} ] },
+     {x:11*TS,y:7*TS,pal:'granne',name:'Farmor',dir:'down',bonus:true,
+      line:'Vad trevligt att du hittade hit till min bakgård! Här gömmer sig några mynt bland blommorna — och lite extra bonuspoäng till dig! Vi ses på kalaset.'},
+     {x:21*TS,y:11*TS,pal:'keeper',name:'Farfar',dir:'left',hammock:true,
+      line:'*tittar upp från korsordet* Hej Olivia, grattis! Sju bokstäver för "stor fest"... KALASET, så klart! Vi ses där i kväll.'} ] },
 ];
 // scen-utgångar (vänster/höger/upp/ner) — gör världen 2D med dolda bonusrum
 scenes[0].exits={right:1};
@@ -439,6 +479,8 @@ function buildScene(i){
     for(let c=col-1;c<=col+1;c++){if(row>=0&&row<ROWS&&c>=0&&c<COLS)blocked[row][c]=true;}});
   // fountain blocked
   if(sc.fountain){const f=sc.fountain;for(let r=f.ty;r<f.ty+f.th;r++)for(let c=f.tx;c<f.tx+f.tw;c++){if(r<ROWS&&c<COLS)blocked[r][c]=true;}}
+  // greenhouse blocked
+  if(sc.greenhouse){const g=sc.greenhouse;for(let r=g.ty;r<g.ty+g.th;r++)for(let c=g.tx;c<g.tx+g.tw;c++){if(r<ROWS&&c<COLS)blocked[r][c]=true;}}
   // trees: border line top + scattered
   function addTree(c,r){ if(r<0||r>=ROWS||c<0||c>=COLS)return; if(grid[r][c]!=='G')return; if(r>=9&&r<=10)return;
     blocked[r][c]=true; trees.push({c,r}); }
@@ -481,8 +523,8 @@ function drawTile(code,sc,c,r){
   }
 }
 
-function drawTree(c,r){
-  const x=c*TS,y=r*TS;
+function drawTree(c,r){ drawTreePx(c*TS,r*TS); }
+function drawTreePx(x,y){
   // trunk
   ctx.fillStyle='#6b4423';ctx.fillRect(x+TS/2-4,y+TS-14,8,16);
   ctx.fillStyle='#5a3618';ctx.fillRect(x+TS/2-4,y+TS-14,3,16);
@@ -501,11 +543,27 @@ function drawBush(c,r){
   ctx.fillStyle='#3a942f';ctx.fillRect(x+6,y+9,18,12);
   ctx.fillStyle='#52ad3c';ctx.fillRect(x+9,y+11,8,6);
 }
-function drawFlower(c,r,col){
-  const x=c*TS+TS/2,y=r*TS+TS/2;
+function drawFlower(c,r,col){ drawFlowerPx(c*TS+TS/2,r*TS+TS/2,col); }
+function drawFlowerPx(x,y,col){
   ctx.fillStyle='#2e7d2e';ctx.fillRect(x-1,y,2,8);
   ctx.fillStyle=col;ctx.fillRect(x-4,y-5,3,3);ctx.fillRect(x+1,y-5,3,3);ctx.fillRect(x-4,y-1,3,3);ctx.fillRect(x+1,y-1,3,3);
   ctx.fillStyle='#ffe27a';ctx.fillRect(x-1,y-2,2,2);
+}
+function drawMeadow(cx,cy){
+  const cols=['#ff5d8f','#ffd23f','#5b8def','#a06ae0','#ff8a3a','#ffffff'];
+  for(let i=0;i<16;i++){const a=i*2.39,rr=8+(i%4)*11;
+    drawFlowerPx(cx+Math.cos(a)*rr*1.7, cy+Math.sin(a)*rr, cols[i%6]);}
+}
+function drawBlanket(cx,cy){
+  for(let i=0;i<8;i++)for(let j=0;j<8;j++){ctx.fillStyle=((i+j)&1)?'#e0473f':'#f3ece0';ctx.fillRect(cx-32+i*8,cy-32+j*8,8,8);}
+  ctx.strokeStyle='rgba(0,0,0,.15)';ctx.lineWidth=2;ctx.strokeRect(cx-32,cy-32,64,64);
+  // korg
+  ctx.fillStyle='#a9712e';ctx.fillRect(cx-11,cy-6,22,15);ctx.fillStyle='#8a5a22';ctx.fillRect(cx-11,cy-6,22,3);
+  ctx.strokeStyle='#7a4e1e';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy-6,11,Math.PI,0);ctx.stroke();
+  // lite mat
+  ctx.fillStyle='#ffd24a';ctx.beginPath();ctx.arc(cx+19,cy+14,4,0,7);ctx.fill();
+  ctx.fillStyle='#e0532e';ctx.beginPath();ctx.arc(cx-17,cy+15,4,0,7);ctx.fill();
+  ctx.fillStyle='#fff';ctx.fillRect(cx-4,cy+12,8,6);
 }
 
 function drawCat(x,y){
@@ -566,6 +624,15 @@ function drawCoin(x,y){
 }
 function drawFountain(f){
   const x=f.cx,y=f.cy;
+  // kullersten runt fontänen
+  ctx.save();
+  ctx.beginPath();ctx.ellipse(x,y+10,70,44,0,0,7);ctx.clip();
+  const cs=['#9a948a','#878276','#a8a39a','#7c776d','#928c82'];
+  for(let yy=-46;yy<=46;yy+=9){const off=((yy/9)&1)*6;
+    for(let xx=-72;xx<=72;xx+=12){
+      ctx.fillStyle=cs[Math.abs((xx*3+yy*7))%5];
+      ctx.beginPath();ctx.ellipse(x+xx+off,y+10+yy,5,4,0,0,7);ctx.fill();}}
+  ctx.restore();
   ctx.fillStyle='#8a8a7c';ctx.beginPath();ctx.ellipse(x,y+6,42,20,0,0,7);ctx.fill();
   ctx.fillStyle='#9a9a8e';ctx.beginPath();ctx.ellipse(x,y,42,22,0,0,7);ctx.fill();
   ctx.fillStyle='#3f8fce';ctx.beginPath();ctx.ellipse(x,y,33,16,0,0,7);ctx.fill();
@@ -605,12 +672,49 @@ function drawGate(open){
   if(open){
     ctx.fillStyle='#8a5a2b';ctx.fillRect(11*TS,gy-14,6,26);
     ctx.fillStyle='#2e7d2e';ctx.font='bold 11px Trebuchet MS';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('▲ Hemlig trädgård',12.5*TS,gy-22);
+    ctx.fillText('▲ Datcha',12.5*TS,gy-22);
   } else {
     ctx.fillStyle='#9a6a3a';ctx.fillRect(11*TS+3,gy-12,3*TS-8,6);ctx.fillRect(11*TS+3,gy+6,3*TS-8,6);
     for(let i=0;i<5;i++){ctx.fillStyle='#9a6a3a';ctx.fillRect(11*TS+6+i*16,gy-12,4,24);}
     ctx.fillStyle='#caa11e';ctx.beginPath();ctx.arc(12.5*TS,gy,3,0,7);ctx.fill();
   }
+}
+function drawGreenhouse(gh){
+  const x=gh.tx*TS,y=gh.ty*TS,w=gh.tw*TS,hh=gh.th*TS,base=y+hh*0.32;
+  ctx.fillStyle='#cfe8ea';ctx.fillRect(x,base,w,y+hh-base);
+  ctx.fillStyle='#bfe0e3';ctx.beginPath();ctx.moveTo(x,base);ctx.lineTo(x+w/2,y);ctx.lineTo(x+w,base);ctx.closePath();ctx.fill();
+  ctx.fillStyle='rgba(70,160,80,.55)';for(let i=0;i<gh.tw;i++)ctx.fillRect(x+8+i*TS,y+hh-15,8,11);
+  ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;
+  for(let i=1;i<gh.tw;i++){ctx.beginPath();ctx.moveTo(x+i*TS,base);ctx.lineTo(x+i*TS,y+hh);ctx.stroke();}
+  ctx.beginPath();ctx.moveTo(x,base+(y+hh-base)*0.5);ctx.lineTo(x+w,base+(y+hh-base)*0.5);ctx.stroke();
+  ctx.fillStyle='#8a9a9a';ctx.fillRect(x+w/2-7,y+hh-18,14,18);
+  ctx.strokeStyle='rgba(80,110,110,.8)';ctx.lineWidth=2;ctx.strokeRect(x,base,w,y+hh-base);
+}
+function drawField(f){
+  const x=f.tx*TS,y=f.ty*TS,w=f.tw*TS,hh=f.th*TS;
+  ctx.fillStyle='#6b4a2a';ctx.fillRect(x,y,w,hh);
+  ctx.fillStyle='#5a3d22';for(let r=4;r<hh;r+=9)ctx.fillRect(x,y+r,w,2);
+  const n=f.tw*2;
+  if(f.kind==='potato'){
+    for(let i=0;i<n;i++){const px=x+10+i*16;ctx.fillStyle='#3a8a3a';ctx.beginPath();ctx.arc(px,y+hh/2+2,6,0,7);ctx.fill();
+      ctx.fillStyle='#4fae3c';ctx.fillRect(px-3,y+hh/2-3,6,6);}
+  } else {
+    for(let i=0;i<n;i++){const px=x+10+i*16;
+      ctx.fillStyle='#3a8a3a';ctx.fillRect(px-1,y+hh/2-9,2,9);ctx.fillStyle='#2e7d2e';ctx.fillRect(px-4,y+hh/2-8,2,7);ctx.fillRect(px+2,y+hh/2-8,2,7);
+      ctx.fillStyle='#e07a2e';ctx.beginPath();ctx.moveTo(px-3,y+hh/2);ctx.lineTo(px+3,y+hh/2);ctx.lineTo(px,y+hh/2+9);ctx.closePath();ctx.fill();}
+  }
+  ctx.fillStyle='rgba(20,12,40,.6)';const lbl=f.kind==='potato'?'Potatisland':'Morotsland';const lw=lbl.length*6+8;
+  ctx.fillRect(x+w/2-lw/2,y-13,lw,12);
+  ctx.fillStyle='#fff';ctx.font='10px Trebuchet MS';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lbl,x+w/2,y-7);
+}
+// hängmatta-duk mellan två (riktiga) träd; figuren ritas separat som vanlig karaktär
+function drawHammockCloth(x,y){
+  ctx.strokeStyle='#7a5230';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(x,y-30);ctx.lineTo(x,y-20);ctx.moveTo(x,y+30);ctx.lineTo(x,y+18);ctx.stroke();
+  ctx.fillStyle='#b53f6e';ctx.beginPath();ctx.ellipse(x+2,y+2,19,27,0,0,7);ctx.fill();
+  ctx.fillStyle='#e57aa0';ctx.beginPath();ctx.ellipse(x,y+2,17,25,0,0,7);ctx.fill();
+  ctx.strokeStyle='rgba(150,50,95,.5)';ctx.lineWidth=1;
+  for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(x-13,y+2+i*8);ctx.lineTo(x+13,y+2+i*8);ctx.stroke();}
 }
 function drawStallGoods(kind,x,ty){
   if(kind==='fruit'){const cols=['#e0532e','#d8b020','#a83fd0','#e07a2e'];
@@ -684,6 +788,9 @@ function draw(){
   // flowers & bushes (ground deco)
   B.flowers.forEach(f=>drawFlower(f.c,f.r,sc.flower));
   B.bushes.forEach(b=>drawBush(b.c,b.r));
+  (sc.fields||[]).forEach(drawField); // potatis-/morotsland
+  if(sc.meadow) drawMeadow(sc.meadow.cx,sc.meadow.cy);   // blomäng i hörnet
+  if(sc.picnic) drawBlanket(sc.picnic.cx,sc.picnic.cy);  // picknickfilt
   // world coins
   (worldCoins[sceneIndex]||[]).forEach((co,idx)=>{ if(coinsTaken[sceneIndex+'_'+idx])return;
     drawCoin(co.c*TS+TS/2,co.r*TS+TS/2);});
@@ -702,10 +809,14 @@ function draw(){
   if(sceneIndex===backpackEntity.scene && quests.backpack==='active')
     ents.push({y:backpackEntity.y,draw:()=>drawBackpack(backpackEntity.x,backpackEntity.y)});
   if(sc.fountain)ents.push({y:sc.fountain.cy,draw:()=>drawFountain(sc.fountain)});
+  if(sc.greenhouse)ents.push({y:(sc.greenhouse.ty+sc.greenhouse.th)*TS,draw:()=>drawGreenhouse(sc.greenhouse)});
   (sc.stalls||[]).forEach(st=>ents.push({y:st.cy,draw:()=>drawStall(st)}));
   sc.houses.forEach(h=>ents.push({y:(h.ty+h.th)*TS,draw:()=>drawHouse(h)}));
   B.trees.forEach(t=>ents.push({y:(t.r+1)*TS,draw:()=>drawTree(t.c,t.r)}));
-  sc.npcs.forEach(n=>ents.push({y:n.y,draw:()=>drawChar(PAL[n.pal],n.dir,false,0,n.x,n.y)}));
+  sc.npcs.forEach(n=>ents.push({y:n.y,draw:()=>{
+    if(n.hammock){ drawTreePx(n.x-TS/2,n.y-54-TS/2); drawTreePx(n.x-TS/2,n.y+48-TS/2); drawHammockCloth(n.x,n.y); }
+    drawChar(PAL[n.pal],n.dir,false,0,n.x,n.y);
+  }}));
   ents.push({y:player.y,draw:()=>drawChar(PAL.olivia,player.dir,player.moving,player.step,player.x,player.y)});
   ents.sort((a,b)=>a.y-b.y);
   ents.forEach(e=>e.draw());
@@ -833,15 +944,24 @@ function update(dt){
       :'⭐ Mellanslag: prata med '+interactTarget.npc.name;
   } else hint.style.display='none';
 
-  // clock
+  // clock + live-poäng
   const cur=Math.floor(8*60+(12*60-8*60)*(1-timeLeft/TOTAL_TIME));
   document.getElementById('clockTime').textContent=String(Math.floor(cur/60)).padStart(2,'0')+':'+String(cur%60).padStart(2,'0');
   document.getElementById('timeLeft').textContent=fmt(timeLeft)+' kvar';
+  const sEl=document.getElementById('score');if(sEl)sEl.textContent=currentScore();
 }
 function fmt(s){s=Math.max(0,Math.floor(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+// poäng om man skulle klara kalaset just nu (samma formel som vid vinst)
+function currentScore(){
+  const qd=['cat','bread','horse','letter','backpack'].filter(k=>quests[k]==='done').length;
+  return 1000+Math.floor(timeLeft)*10+qd*500+coinPickups*100+(bonusMom?800:0)+bonusPoints;
+}
+function getBest(){try{return +localStorage.getItem('olivia_best_'+difficulty)||0;}catch(e){return 0;}}
 
 // ===================== ACTIONS =====================
-function addCoins(v){coins+=v;document.getElementById('coins').textContent=coins;}
+function updateCoins(){const el=document.getElementById('coins');el.textContent=coins;el.style.color=coins<=0?'#ff6b6b':'';}
+function addCoins(v){coins+=v;updateCoins();}
+function showShopMsg(text,kind){const m=document.getElementById('shopMsg');if(!m)return;m.textContent=text;m.className=kind;m.style.display='block';}
 function handleAction(){
   if(state==='dialog'){closeDialog();return;}
   if(state!=='play'||!interactTarget)return;
@@ -857,11 +977,11 @@ function handleAction(){
     return;
   }
   if(interactTarget.type==='backpack'){
-    if(quests.backpack==='active'){quests.backpack='have';sfx('coin');openDialog('🎒 Ryggsäck','Du hittade en ryggsäck! Den är stängd och känns lite tung... Ta den till Pappa Lauri på Festtorget (längst åt höger).');}
+    if(quests.backpack==='active'){quests.backpack='have';sfx('coin');openDialog('🎒 Ryggsäck','Du hittade en ryggsäck! Den är stängd och känns lite tung... Ta den till Pappa på Festtorget (längst åt höger).');}
     return;
   }
   if(interactTarget.type==='key'){
-    quests.gateKey='have';sfx('coin');openDialog('🔑 Nyckel','Du hittade en gammal nyckel! Ge den till Trädgårdsvakten så öppnar hon grinden till den hemliga trädgården.');
+    quests.gateKey='have';sfx('coin');openDialog('🔑 Nyckel','Du hittade en gömd nyckel! Ge den till Trädgårdsvakten i Stadsparken så öppnar hon grinden till datchan.');
     return;
   }
   questTalk(interactTarget.npc);
@@ -904,7 +1024,7 @@ function questTalk(n){
     if(quests.letter==='active'){quests.letter='done';addCoins(25);sfx('quest');openDialog(n.name,'Ett brev från Stina! 💌 Tack Olivia, här är 25 mynt! Förresten — leksaksaffären har de finaste piñatorna. 🪅');return;}
     openDialog(n.name,n.line);return;
   }
-  if(n.name==='Pappa Lauri'){
+  if(n.name==='Pappa'){
     if(quests.backpack==='none'){quests.backpack='active';openDialog(n.name,'Tack att du vill hjälpa! Jag tappade min ryggsäck på Marknadsgatan (åt vänster). Hittar du den och tar hit den får du 25 mynt! 🎒');}
     else if(quests.backpack==='active')openDialog(n.name,'Min ryggsäck är nog kvar på Marknadsgatan. Snälla, leta efter den!');
     else if(quests.backpack==='have'){quests.backpack='done';addCoins(25);sfx('quest');openDialog(n.name,'Min ryggsäck! 🎒 Tack snälla Olivia! Här är 25 mynt. *viskar för sig själv: nu kan jag ge henne presenten på kalaset...* 🤫 Vi ses i kväll!');}
@@ -912,9 +1032,9 @@ function questTalk(n){
     return;
   }
   if(n.name==='Trädgårdsvakten'){
-    if(quests.gate==='open')openDialog(n.name,'Grinden är öppen — spring upp till den hemliga trädgården! 🌸');
-    else if(quests.gateKey==='have'){quests.gate='open';sfx('gate');openDialog(n.name,'Min nyckel! Tack! *låser upp grinden* 🔓 Nu kan du gå upp till den hemliga trädgården. 🌿');}
-    else openDialog(n.name,'Jag behöver min nyckel för att öppna grinden. Den ligger vid det stora trädet uppe till höger i parken. 🔑');
+    if(quests.gate==='open')openDialog(n.name,'Grinden är öppen — spring upp till Babuschka och Dieduschkas datcha! 🌿');
+    else if(quests.gateKey==='have'){quests.gate='open';sfx('gate');openDialog(n.name,'Min nyckel! Tack! *låser upp grinden* 🔓 Nu kan du gå upp till datchan med växthus och grönsaksland. 🌻');}
+    else openDialog(n.name,'Jag behöver min nyckel för att öppna grinden till datchan. Jag tror jag tappade den borta vid Festtorget (längst åt höger)... leta i ett hörn. 🔑');
     return;
   }
   if(n.bonus){
@@ -926,6 +1046,7 @@ function questTalk(n){
 }
 let curShop=null;
 function openShop(key){curShop=shops[key];state='shop';
+  const m=document.getElementById('shopMsg');if(m){m.style.display='none';m.textContent='';m.className='';}
   document.getElementById('shopName').textContent=curShop.name;
   document.getElementById('shopDesc').textContent=curShop.desc;renderShop();show('shop');}
 function renderShop(){const box=document.getElementById('shopItems');box.innerHTML='';
@@ -938,15 +1059,21 @@ function renderShop(){const box=document.getElementById('shopItems');box.innerHT
     btn.textContent=own?'✔ Köpt':'Köp';if(!own)btn.onclick=()=>buy(it);
     row.appendChild(btn);box.appendChild(row);});}
 function buy(it){if(!it.repeat&&owned[it.id])return;
-  if(coins<it.price){openDialog('Försäljare','Oj, du har inte råd med det just nu. 💰');return;}
-  coins-=it.price;sfx('buy');
-  if(!it.repeat){owned[it.id]=true;
+  if(coins<it.price){showShopMsg('💰 Du har inte råd med '+it.name+' — pengarna räcker inte!','warn');return;}
+  coins-=it.price;sfx('buy');updateCoins();
+  let msg;
+  if(it.repeat){ msg='Mmm, vad gott med '+it.name+'! 😋'; }
+  else { owned[it.id]=true;
     if(it.mom)bonusMom=true;
-    if(it.listId){const li=list.find(l=>l.id===it.listId);if(li)li.got=true;}}
-  document.getElementById('coins').textContent=coins;renderList();renderShop();
+    if(it.listId){const li=list.find(l=>l.id===it.listId);if(li)li.got=true;}
+    msg='✔ Du köpte '+it.name+'!'; }
+  if(coins<=0) msg+='  💰 Nu är pengarna slut!';
+  showShopMsg(msg, coins<=0?'warn':'ok');
+  renderList();renderShop();
   if(allGot()&&!notifiedDone){notifiedDone=true;
     setTimeout(()=>openDialog('💡 Tips','Du har allt på listan! Spring hem till mamma (åt vänster, plats 1) innan tiden tar slut! 🏠'),250);}}
-function closeShop(){hide('shop');state='play';}
+function closeShop(){hide('shop');state='play';
+  const m=document.getElementById('shopMsg');if(m){m.style.display='none';m.textContent='';m.className='';}}
 function renderList(){const c=document.getElementById('listItems');c.innerHTML='';
   list.forEach(i=>{const d=document.createElement('div');d.className=i.got?'li-done':'';
     d.textContent=(i.got?'✅ ':'⬜ ')+i.label;c.appendChild(d);});}
@@ -1047,10 +1174,11 @@ function drawMini(g,x,y,col,sad){
   if(sad)g.fillRect(x-2,y-18,4,2);else g.fillRect(x-2,y-19,4,2);
 }
 function winGame(){state='end';hide('hud');sfx('win');drawEndScene(true);
-  document.getElementById('endTitle').textContent='🎉 Du klarade det!';
+  document.getElementById('endTitle').textContent='🎉 Du klarade det på nivå '+DIFF[difficulty].label+'!';
   document.getElementById('endText').textContent='Olivia hann hem med allt precis innan klockan slog 12! Huset fylldes av ballonger, tårta och glada vänner. Det blev stadens bästa födelsedagskalas! 🎉'+
-    (quests.backpack==='done'?' Pappa Lauri kom på kalaset och överraskade Olivia med sin hemliga present — en glittrande gitarr! 🎸':'')+
-    (bonusMom?' Och Olivia kom själv på att köpa en blombukett till mamma — mamma blev överlycklig! 💐':'');
+    (quests.backpack==='done'?' Pappa kom på kalaset och överraskade Olivia med sin hemliga present — en glittrande gitarr! 🎸':'')+
+    (bonusMom?' Och Olivia kom själv på att köpa en blombukett till mamma — mamma blev överlycklig! 💐':'')+
+    ' Du spelade på svårighetsgrad '+DIFF[difficulty].label+'.';
   // ---- POÄNG ----
   const questsDone=['cat','bread','horse','letter','backpack'].filter(k=>quests[k]==='done').length;
   const base=1000;
@@ -1067,6 +1195,7 @@ function winGame(){state='end';hide('hud');sfx('win');drawEndScene(true);
   const rad=(t,v)=>'<div style="display:flex;justify-content:space-between;max-width:300px;margin:2px auto;"><span>'+t+'</span><b style="color:#ffe27a">'+v+'</b></div>';
   document.getElementById('endScore').innerHTML=
     '<div style="font-size:30px;letter-spacing:4px;">'+'⭐'.repeat(stars)+'☆'.repeat(3-stars)+'</div>'+
+    '<div style="font-size:14px;margin:2px 0 6px;opacity:.9;">Svårighetsgrad: <b style="color:#a78bfa">'+DIFF[difficulty].label+'</b></div>'+
     rad('🏁 Klarade kalaset','+'+base)+
     rad('⏱️ Tid kvar ('+fmt(timeLeft)+')','+'+timeBonus)+
     rad('🎯 Sidouppdrag ('+questsDone+'/5)','+'+questBonus)+
@@ -1142,6 +1271,8 @@ function startGame(){hide('menu');show('hud');state='play';
   scenes.forEach(s=>s.npcs.forEach(n=>{n._claimed=false;}));
   for(const k in coinsTaken)delete coinsTaken[k];
   document.getElementById('coins').textContent=coins;renderList();
+  document.getElementById('best').textContent=getBest();
+  document.getElementById('score').textContent=currentScore();
   if(musicOn){bgm.currentTime=0;bgm.play().catch(()=>{});
     try{if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();actx.resume&&actx.resume();}catch(e){}}
   openDialog('Mamma',scenes[0].npcs[0].line);}
