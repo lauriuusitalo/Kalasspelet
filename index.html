@@ -146,9 +146,9 @@
       <button class="diffBtn sel" data-d="normal">Normal · 7 min</button>
       <button class="diffBtn" data-d="hard">Svår · 5 min</button>
     </div>
-    <button class="btn" id="btnStart">▶ Starta spel</button>
-    <button class="btn alt" id="btnHow">📖 Instruktioner</button>
-    <button class="btn alt" id="btnStory">✨ Berättelsen</button>
+    <button class="btn" id="btnStart">Starta spel</button>
+    <button class="btn alt" id="btnHow">Instruktioner</button>
+    <button class="btn alt" id="btnStory">Berättelsen</button>
     <div style="margin-top:22px;font-size:13px;opacity:.8;line-height:1.5;">
       Av Olivia &amp; Lauri
     </div>
@@ -175,7 +175,7 @@
   <div id="storyView" class="overlay hidden">
     <div class="card">
       <h2>✨ Berättelsen</h2>
-      <p>Idag fyller Olivia år, och klockan 12 börjar hennes eget födelsedagskalas!</p>
+      <p>Idag fyller Olivia år, och klockan 12 börjar hennes eget födelsedagskalas — ett ridkalas på ridskolan där alla får rida häst! 🐴</p>
       <p>Mamma har skrivit en lista med allt som behövs: en festklänning, en tårta, godispåsar, en piñata och ballonger.</p>
       <p>Men mamma har bara 90 mynt — och allt på listan kostar mer än så! Olivia måste plocka glittrande guldmynt och hjälpa sina vänner Wilma, Stina, Elisa och Alivia med små uppdrag för att tjäna ihop resten.</p>
       <p>Tiden är knapp — Olivia måste vara hemma med allt INNAN klockan slår 12, annars hinner festen inte bli klar och gästerna blir ledsna. Klarar du det blir det stadens bästa kalas! 🎉</p>
@@ -374,7 +374,7 @@ const scenes=[
      {tx:20,ty:5,tw:4,th:3,wall:'#d8c0e0',roof:'#7c4dd6',name:'Granne'} ],
    npcs:[
      {x:10*TS,y:10*TS,pal:'mamma',name:'Mamma',dir:'down',win:true,
-      line:'Grattis på födelsedagen, Olivia! 🎂 Ditt kalas börjar klockan 12 — men vi måste handla allt först! På listan: festklänning, tårta, godispåsar, piñata och ballonger. Jag kunde bara ge dig 90 mynt — det räcker inte! Plocka mynt och hjälp folk i stan för att tjäna mer. Var hemma INNAN klockan slår 12 — du har 5 minuter! Skynda dig.'},
+      line:'Grattis på födelsedagen, Olivia! 🎂 Ditt ridkalas på ridskolan börjar klockan 12 — men vi måste handla allt först! På listan: festklänning, tårta, godispåsar, piñata och ballonger. Jag kunde bara ge dig 90 mynt — det räcker inte! Plocka mynt och hjälp folk i stan för att tjäna mer. Var hemma INNAN klockan slår 12 — du har 5 minuter! Skynda dig.'},
      {x:17*TS,y:9*TS,pal:'girl',name:'Wilma',dir:'left',
       line:'*snyft* 😿 Hej bästis...'} ] },
 
@@ -401,7 +401,7 @@ const scenes=[
      {x:11*TS,y:8*TS,pal:'baker',name:'Bagaren',dir:'down',
       line:'Doften av nybakat! Tårtan i mataffären är världens godaste. Missa inte godispåsarna heller!'},
      {x:19*TS,y:10*TS,pal:'girl',name:'Elisa',dir:'left',
-      line:'Grattis Olivia! 😊 Vi ses på ditt kalas. Skynda dig så hinner du handla allt innan klockan 12!'} ] },
+      line:'Grattis Olivia! 😊 Det är jag som driver ridskolan där ditt ridkalas hålls i kväll. Skynda dig så hinner du handla allt innan klockan 12!'} ] },
 
  { name:'Stadsparken', seed:53, grass1:'#4f9e44',grass2:'#458a3b',path:'#c2a86a',flower:'#5b8def',terrain:'park',
    pond:{tx:1,ty:11,tw:4,th:3},
@@ -412,7 +412,7 @@ const scenes=[
      {x:9*TS,y:9*TS,pal:'girl',name:'Alivia',dir:'right',
       line:'Grattis Olivia! 🪅 Leksaksaffären har de finaste piñatorna. En sådan får inte saknas på ditt kalas!'},
      {x:13*TS,y:5*TS,pal:'keeper',name:'Trädgårdsvakten',dir:'down',
-      line:'Bakom grinden där uppe ligger Babuschka och Dieduschkas datcha — full med bonuspoäng! Men jag tappade min nyckel borta vid Festtorget...'} ] },
+      line:'Bakom grinden där uppe ligger Бабушка och Дедушкаs datcha — full med bonuspoäng! Men jag tappade min nyckel borta vid Festtorget...'} ] },
 
  { name:'Festtorget', seed:71, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b2d0',flower:'#ffd24a',terrain:'festival',
    houses:[
@@ -424,22 +424,23 @@ const scenes=[
      {x:18*TS,y:11*TS,pal:'boy',name:'Pappa',dir:'left',
       line:'Åh nej, jag har tappat min ryggsäck på Marknadsgatan! 🎒 Det ligger något viktigt i den. Hittar du den får du 25 mynt — och då kan jag komma på ditt kalas!'} ] },
 
- { name:'Babuschkas datcha', seed:90, grass1:'#6db86a',grass2:'#5fa85e',path:'#cdb27a',flower:'#ff7ec0',terrain:'garden',
-   bonus:true, stalls:[],
+ { name:'Бабушка & Дедушка', seed:90, grass1:'#6db86a',grass2:'#5fa85e',path:'#cdb27a',flower:'#ff7ec0',terrain:'garden',
+   bonus:true, stalls:[], noPath:true,
    houses:[{tx:1,ty:2,tw:4,th:4,wall:'#e3c08a',roof:'#9c5a2a',name:'Дача'}],
    greenhouse:{tx:11,ty:2,tw:4,th:3},
    fields:[{tx:6,ty:3,tw:4,th:2,kind:'carrot'},{tx:16,ty:3,tw:4,th:2,kind:'potato'}],
    npcs:[
-     {x:8*TS,y:9*TS,pal:'granne',name:'Babuschka',dir:'down',bonus:true,
+     {x:8*TS,y:9*TS,pal:'granne',name:'Бабушка',dir:'down',bonus:true,
       line:'Privet, Olivia! Grattis på födelsedagen! Välkommen till vår datcha med växthus och grönsaksland. Vi ser så fram emot ditt kalas!'},
-     {x:15*TS,y:10*TS,pal:'keeper',name:'Dieduschka',dir:'left',
-      line:'Grattis, lilla vän! Ta gärna lite potatis och morötter från landet. Vi kommer på kalaset!'} ] },
+     {x:15*TS,y:10*TS,pal:'keeper',name:'Дедушка',dir:'down',mustache:true,
+      line:'Grattis, lilla vän! Ta gärna lite potatis och morötter från landet. Vi ses på ridkalaset!'} ] },
 
- { name:'Farmors bakgård', seed:91, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b08a',flower:'#ffd24a',terrain:'garden',
-   bonus:true, houses:[], stalls:[],
+  { name:'Farmor & Farfar', seed:91, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b08a',flower:'#ffd24a',terrain:'garden',
+   bonus:true, houses:[], stalls:[], noPath:true, treeBorder:true,
+   meadow:{cx:4*TS,cy:12*TS}, picnic:{cx:12*TS,cy:8*TS},
    npcs:[
-     {x:11*TS,y:7*TS,pal:'granne',name:'Farmor',dir:'down',bonus:true,
-      line:'Vad trevligt att du hittade hit till min bakgård! Här gömmer sig några mynt bland blommorna — och lite extra bonuspoäng till dig! Vi ses på kalaset.'},
+     {x:8*TS,y:6*TS,pal:'granne',name:'Farmor',dir:'down',bonus:true,
+      line:'Vad trevligt att du hittade hit till min äng! Här gömmer sig några mynt bland blommorna — och lite extra bonuspoäng till dig! Vi ses på kalaset.'},
      {x:21*TS,y:11*TS,pal:'keeper',name:'Farfar',dir:'left',hammock:true,
       line:'*tittar upp från korsordet* Hej Olivia, grattis! Sju bokstäver för "stor fest"... KALASET, så klart! Vi ses där i kväll.'} ] },
 ];
@@ -460,8 +461,8 @@ function buildScene(i){
   const grid=[]; const blocked=[]; const trees=[]; const flowers=[]; const bushes=[];
   const R=rnd(sc.seed);
   for(let r=0;r<ROWS;r++){grid[r]=[];blocked[r]=[];for(let c=0;c<COLS;c++){grid[r][c]='G';blocked[r][c]=false;}}
-  // horizontal walking path (street)
-  for(let c=0;c<COLS;c++){grid[9][c]='P';grid[10][c]='P';}
+  // horizontal walking path (street) — kan stängas av per scen
+  if(!sc.noPath) for(let c=0;c<COLS;c++){grid[9][c]='P';grid[10][c]='P';}
   // pond
   if(sc.pond){const p=sc.pond;for(let r=p.ty;r<p.ty+p.th;r++)for(let c=p.tx;c<p.tx+p.tw;c++){if(r<ROWS&&c<COLS){grid[r][c]='W';blocked[r][c]=true;}}}
   // plaza stone area for town
@@ -482,11 +483,19 @@ function buildScene(i){
   // greenhouse blocked
   if(sc.greenhouse){const g=sc.greenhouse;for(let r=g.ty;r<g.ty+g.th;r++)for(let c=g.tx;c<g.tx+g.tw;c++){if(r<ROWS&&c<COLS)blocked[r][c]=true;}}
   // trees: border line top + scattered
-  function addTree(c,r){ if(r<0||r>=ROWS||c<0||c>=COLS)return; if(grid[r][c]!=='G')return; if(r>=9&&r<=10)return;
+  function addTree(c,r){ if(r<0||r>=ROWS||c<0||c>=COLS)return; if(grid[r][c]!=='G')return; if(!sc.noPath&&r>=9&&r<=10)return;
     blocked[r][c]=true; trees.push({c,r}); }
-  if(!(sc.exits&&sc.exits.up!=null)) for(let c=0;c<COLS;c+=2) addTree(c,0);
-  const tdens= sc.terrain==='park'?14:6;
-  for(let k=0;k<tdens;k++){addTree(2+Math.floor(R()*(COLS-4)),5+Math.floor(R()*4));}
+  function treeNear(c,r){return trees.some(t=>Math.abs(t.c-c)<=1&&Math.abs(t.r-r)<=1);}
+  const up=sc.exits&&sc.exits.up!=null, down=sc.exits&&sc.exits.down!=null;
+  if(sc.treeBorder){
+    // trädram runt hela bilden, med öppning där en utgång finns
+    for(let c=0;c<COLS;c+=2){ if(!(up&&c>=10&&c<=14)) addTree(c,0); if(!(down&&c>=10&&c<=14)) addTree(c,ROWS-1); }
+    for(let r=2;r<ROWS-1;r+=2){ addTree(0,r); addTree(COLS-1,r); }
+  } else if(!up){ for(let c=0;c<COLS;c+=2) addTree(c,0); }
+  const tdens= sc.terrain==='park'?16:8;
+  // utspridda träd: aldrig intill varandra (inga trånga fickor), och med fria kanter (kol 3..COLS-4)
+  if(!sc.treeBorder) for(let k=0;k<tdens;k++){const c=3+Math.floor(R()*(COLS-7)),r=5+Math.floor(R()*4);
+    if(!treeNear(c,r)) addTree(c,r);}
   // bushes
   for(let k=0;k<8;k++){const c=Math.floor(R()*COLS),r=11+Math.floor(R()*3);if(grid[r]&&grid[r][c]==='G'&&!blocked[r][c]){bushes.push({c,r});}}
   // flowers (deco, not blocked)
@@ -576,19 +585,22 @@ function drawCat(x,y){
   ctx.fillStyle='#f4f4f4';ctx.fillRect(x+7,y-14+b,3,2);ctx.fillRect(x+9,y-18+b,2,5); // tail
   ctx.fillStyle='#d8d8d8';ctx.fillRect(x-6,y-10+b,4,3);
 }
-function drawHorse(x,y){
+function drawHorse(x,y,flip,walking,step){
   const b=Math.sin(now*3)*1, Y=v=>v+b;
   const coat='#dcc28c', shade='#c2a868', dark='#4f3b22', mane1='#efe3bf', maneD='#39301c';
-  // shadow
+  // shadow (oberoende av riktning)
   ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(x,y,18,5,0,0,7);ctx.fill();
+  ctx.save();
+  if(flip){ctx.translate(2*x,0);ctx.scale(-1,1);} // vänd hästen åt rörelsehållet
   // tail (flowing, ljus med mörk kärna)
   ctx.fillStyle=maneD;ctx.fillRect(x-22,Y(y-26),5,22);
   ctx.fillStyle=mane1;ctx.fillRect(x-21,Y(y-24),2,18);
-  // legs
-  ctx.fillStyle=coat;ctx.fillRect(x-14,Y(y-13),5,13);ctx.fillRect(x-5,Y(y-13),5,13);
-  ctx.fillRect(x+4,Y(y-13),5,13);ctx.fillRect(x+13,Y(y-13),5,13);
-  ctx.fillStyle=dark; // mörka nedre ben/hovar
-  ctx.fillRect(x-14,Y(y-4),5,4);ctx.fillRect(x-5,Y(y-4),5,4);ctx.fillRect(x+4,Y(y-4),5,4);ctx.fillRect(x+13,Y(y-4),5,4);
+  // ben (animerad gångcykel)
+  const legX=[-14,-5,4,13], frame=walking?(Math.floor(step)%2):-1;
+  for(let i=0;i<4;i++){const lifted=walking&&(((i===0||i===3)?0:1)===frame);
+    const lx=x+legX[i], len=lifted?10:13;
+    ctx.fillStyle=coat;ctx.fillRect(lx,Y(y-13),5,len);
+    ctx.fillStyle=dark;ctx.fillRect(lx,Y(y-13+len-3),5,3);}
   // body
   ctx.fillStyle=coat;ctx.fillRect(x-18,Y(y-30),38,18);
   ctx.fillStyle=shade;ctx.fillRect(x-18,Y(y-16),38,4); // mage-skugga
@@ -614,6 +626,7 @@ function drawHorse(x,y){
   }
   // pannlugg
   ctx.fillStyle=maneD;ctx.fillRect(x+27,Y(y-55),2,5);
+  ctx.restore();
 }
 function drawCoin(x,y){
   const b=Math.sin(now*3+x)*2;
@@ -816,13 +829,16 @@ function draw(){
   sc.npcs.forEach(n=>ents.push({y:n.y,draw:()=>{
     if(n.hammock){ drawTreePx(n.x-TS/2,n.y-54-TS/2); drawTreePx(n.x-TS/2,n.y+48-TS/2); drawHammockCloth(n.x,n.y); }
     drawChar(PAL[n.pal],n.dir,false,0,n.x,n.y);
+    if(n.mustache){ctx.fillStyle='#5a3417';ctx.fillRect(n.x-5,n.y-29,10,2);ctx.fillRect(n.x-7,n.y-28,2,2);ctx.fillRect(n.x+5,n.y-28,2,2);}
   }}));
-  ents.push({y:player.y,draw:()=>drawChar(PAL.olivia,player.dir,player.moving,player.step,player.x,player.y)});
+  ents.push({y:player.y,draw:()=>{
+    if(quests.horse==='found'){ drawHorse(player.x,player.y, player.dir==='left', player.moving, player.step); drawChar(PAL.olivia,player.dir,player.moving,player.step,player.x,player.y-15); }
+    else drawChar(PAL.olivia,player.dir,player.moving,player.step,player.x,player.y);
+  }});
   ents.sort((a,b)=>a.y-b.y);
   ents.forEach(e=>e.draw());
-  // cat / horse / barn följer Olivia när de hittats
+  // katt följer / ryggsäck bärs (hästen rids, ritas ovan)
   if(quests.cat==='found') drawCat(player.x-22,player.y-2);
-  if(quests.horse==='found') drawHorse(player.x+30,player.y-2);
   if(quests.backpack==='have') drawBackpack(player.x+22,player.y-6); // bär ryggsäcken
   // Wilma cries until cat is returned, then is happy
   const wil=sc.npcs.find(n=>n.name==='Wilma');
@@ -867,6 +883,21 @@ function gotoScene(idx,edge){
   else if(edge==='right')player.x=W-18;
   else if(edge==='top')player.y=2.4*TS;
   else if(edge==='bottom')player.y=(ROWS-1.2)*TS;
+  ensureFree();
+}
+// flytta spelaren till närmaste fria ruta om nuvarande position är blockerad
+function ensureFree(){
+  if(!blockedAt(player.x,player.y))return;
+  const c0=Math.floor(player.x/TS),r0=Math.floor(player.y/TS);
+  for(let rad=1;rad<COLS;rad++){
+    for(let dc=-rad;dc<=rad;dc++)for(let dr=-rad;dr<=rad;dr++){
+      if(Math.abs(dc)!==rad&&Math.abs(dr)!==rad)continue;
+      const c=c0+dc,r=r0+dr;
+      if(c<1||c>=COLS-1||r<2||r>=ROWS-1)continue;
+      const px=c*TS+TS/2,py=r*TS+TS/2;
+      if(!blockedAt(px,py)){player.x=px;player.y=py;return;}
+    }
+  }
 }
 function blockedAt(px,py){
   const B=buildScene(sceneIndex);
@@ -887,12 +918,16 @@ function update(dt){
   if(keys['ArrowDown']){dy+=1;player.dir='down';}
   player.moving=!!(dx||dy);
   if(player.moving){
-    const len=Math.hypot(dx,dy);const sp=player.speed*dt*60;
+    const len=Math.hypot(dx,dy);const sp=player.speed*(quests.horse==='found'?1.45:1)*dt*60;
     const nx=player.x+dx/len*sp, ny=player.y+dy/len*sp;
-    if(!blockedAt(nx,player.y)) player.x=nx;
-    if(!blockedAt(player.x,ny)) player.y=ny;
+    let moved=false;
+    if(!blockedAt(nx,player.y)){player.x=nx;moved=true;}
+    if(!blockedAt(player.x,ny)){player.y=ny;moved=true;}
+    // glid igenom diagonala luckor så man aldrig fastnar i ett hörn
+    if(!moved && dx && dy && !blockedAt(nx,ny)){player.x=nx;player.y=ny;}
     player.step+=dt*8;
   }
+  if(blockedAt(player.x,player.y)) ensureFree(); // säkerhet: lossa om man ändå hamnat i en blockerad ruta
   // bounds & transitions (4 riktningar)
   const ex0=scenes[sceneIndex].exits||{};
   const gateClosed=(scenes[sceneIndex].gateNorth && quests.gate!=='open');
@@ -972,7 +1007,7 @@ function handleAction(){
     return;
   }
   if(interactTarget.type==='horse'){
-    if(quests.horse==='active'){quests.horse='found';sfx('quest');openDialog('Hästen 🐴','Gnägg! Du fångade den rymda hästen! Ta den tillbaka till Elisa på Marknadsgatan.');}
+    if(quests.horse==='active'){quests.horse='found';sfx('quest');openDialog('Hästen 🐴','Gnägg! Du fångade den rymda hästen! Hoppa upp och RID den tillbaka till Elisa på Marknadsgatan (du kan rida runt fritt på vägen dit).');}
     else openDialog('Häst 🐴','En vacker häst betar lugnt här. Den ser ut att ha rymt från någonstans...');
     return;
   }
@@ -993,14 +1028,14 @@ function questTalk(n){
   if(n.name==='Wilma'){
     if(quests.cat==='none'){quests.cat='active';openDialog(n.name,'*snyft* 😿 Olivia! Min vita katt Nala har sprungit bort — jag tror hon är i Stadsparken (åt höger). Snälla, kan du leta? Du får 30 mynt!');}
     else if(quests.cat==='active')openDialog(n.name,'*snyft* Har du hittat Nala än? Hon är nog kvar i Stadsparken... 😢');
-    else if(quests.cat==='found'){quests.cat='done';addCoins(30);openDialog(n.name,'NALA! 😺 *kramar katten och torkar tårarna* Tack snälla Olivia, du räddade min dag! Här är 30 mynt. Nu ser jag fram emot ditt kalas! 💖');}
-    else openDialog(n.name,'Tack igen för att du hittade Nala! 😺 Bästa födelsedagsbarnet!');
+    else if(quests.cat==='found'){quests.cat='done';addCoins(30);openDialog(n.name,'NALA! 😺 *kramar katten och torkar tårarna* Tack snälla Olivia, du räddade min dag! Här är 30 mynt. Och nu ser jag SÅ mycket fram emot att få rida på ditt ridkalas i kväll!! 🐴💖');}
+    else openDialog(n.name,'Tack igen för att du hittade Nala! 😺 Jag längtar verkligen till att få rida på ridkalaset! 🐴');
     return;
   }
   if(n.name==='Elisa'){
     if(quests.horse==='none'){quests.horse='active';openDialog(n.name,'Grattis Olivia! Men åh nej — en häst har rymt från min ridskola! 🐴 Jag tror den sprang ända bort till Festtorget (längst åt höger). Hittar du den får du 30 mynt!');}
     else if(quests.horse==='active')openDialog(n.name,'Har du hittat hästen än? Leta på Festtorget längst åt höger!');
-    else if(quests.horse==='found'){quests.horse='done';addCoins(30);openDialog(n.name,'Tack Olivia! 🐴 Nu kan jag rida tillbaka den till ridskolan. Här är 30 mynt — vi ses på ditt kalas!');}
+    else if(quests.horse==='found'){quests.horse='done';addCoins(30);openDialog(n.name,'Du red hit den, vad duktig! 🐴 Nu står hästen redo på ridskolan. Här är 30 mynt — vi ses på ridkalaset i kväll!');}
     else openDialog(n.name,'Tack för hjälpen med hästen! 🐴');
     return;
   }
@@ -1032,7 +1067,7 @@ function questTalk(n){
     return;
   }
   if(n.name==='Trädgårdsvakten'){
-    if(quests.gate==='open')openDialog(n.name,'Grinden är öppen — spring upp till Babuschka och Dieduschkas datcha! 🌿');
+    if(quests.gate==='open')openDialog(n.name,'Grinden är öppen — spring upp till Бабушка och Дедушкаs datcha! 🌿');
     else if(quests.gateKey==='have'){quests.gate='open';sfx('gate');openDialog(n.name,'Min nyckel! Tack! *låser upp grinden* 🔓 Nu kan du gå upp till datchan med växthus och grönsaksland. 🌻');}
     else openDialog(n.name,'Jag behöver min nyckel för att öppna grinden till datchan. Jag tror jag tappade den borta vid Festtorget (längst åt höger)... leta i ett hörn. 🔑');
     return;
@@ -1091,11 +1126,24 @@ function sprOn(g,mat,p,x,y,s,flip){
     for(let c=0;c<row.length;c++){const ch=flip?row[row.length-1-c]:row[c];const col=p[ch];
       if(col){g.fillStyle=col;g.fillRect((x+c*s)|0,(y+r*s)|0,s,s);}}}
 }
-function drawEndChar(g,palKey,cx,fy,sad){
+function drawEndChar(g,palKey,cx,fy,sad,noShadow){
   const s=2,w=12*s,h=16*s,p=PAL[palKey];
-  g.fillStyle='rgba(0,0,0,.22)';g.beginPath();g.ellipse(cx,fy,11,3,0,0,7);g.fill();
+  if(!noShadow){g.fillStyle='rgba(0,0,0,.22)';g.beginPath();g.ellipse(cx,fy,11,3,0,0,7);g.fill();}
   sprOn(g,M_DOWN,p,cx-w/2,fy-h,s,false);
   if(sad){g.fillStyle='#5bb0ff';g.fillRect(cx-5,fy-h+11,2,5);g.fillRect(cx+3,fy-h+11,2,5);}
+}
+function drawEndHorse(g,x,y,col){
+  col=col||'#a9712e';
+  g.fillStyle='rgba(0,0,0,.2)';g.beginPath();g.ellipse(x,y,16,4,0,0,7);g.fill();
+  g.fillStyle=col;g.fillRect(x-13,y-15,25,11);                 // kropp
+  g.fillStyle='#7a5018';g.fillRect(x-11,y-5,3,6);g.fillRect(x-3,y-5,3,6);g.fillRect(x+5,y-5,3,6);g.fillRect(x+9,y-5,3,6); // ben
+  g.fillStyle=col;g.fillRect(x+8,y-26,6,13);g.fillRect(x+12,y-28,9,8); // hals+huvud
+  g.fillStyle='#4f3413';g.fillRect(x+6,y-26,2,13);g.fillRect(x-15,y-15,3,11); // man+svans
+  g.fillStyle='#140d06';g.fillRect(x+17,y-25,1,1);             // öga
+}
+function drawEndRider(g,palKey,x,y,horseCol){
+  drawEndHorse(g,x,y,horseCol);
+  drawEndChar(g,palKey,x,y-13,false,true); // ryttaren sitter på hästryggen (ingen skugga)
 }
 function drawEndScene(win){
   const ec=document.getElementById('endCanvas'),g=ec.getContext('2d');g.imageSmoothingEnabled=false;
@@ -1104,58 +1152,51 @@ function drawEndScene(win){
   g.fillStyle=win?'#ffe3c0':'#3a3550';g.fillRect(0,0,320,120);
   g.fillStyle=win?'#caa06a':'#2a2740';g.fillRect(0,120,320,40);
   if(win){
-    // warm party room
-    const grd=g.createLinearGradient(0,0,0,120);grd.addColorStop(0,'#ffe9c0');grd.addColorStop(1,'#ffd0a0');
-    g.fillStyle=grd;g.fillRect(0,0,320,120);
-    g.fillStyle='#caa06a';g.fillRect(0,120,320,40); // floor
-    g.fillStyle='#b58a52';for(let i=0;i<320;i+=20)g.fillRect(i,120,1,40);
+    // himmel över ridskolan
+    const grd=g.createLinearGradient(0,0,0,116);grd.addColorStop(0,'#bfe3ff');grd.addColorStop(1,'#e8f5d8');
+    g.fillStyle=grd;g.fillRect(0,0,320,116);
+    // sandig ridbana
+    g.fillStyle='#e6c48f';g.fillRect(0,112,320,48);
+    g.fillStyle='#d6b074';for(let i=0;i<320;i+=14)g.fillRect(i,118+(i%4),9,2);
+    // arenastaket
+    for(let i=0;i<320;i+=40){g.fillStyle='#8a5a22';g.fillRect(i,98,4,18);}
+    g.fillStyle='#b9844e';g.fillRect(0,102,320,4);g.fillStyle='#a9712e';g.fillRect(0,110,320,3);
     // bunting flags
     const fc=['#ef72a8','#5b8def','#ffd24a','#4fae3c','#e0532e'];
     for(let i=0;i<13;i++){g.fillStyle=fc[i%5];
       g.beginPath();g.moveTo(i*26,0);g.lineTo(i*26+13,0);g.lineTo(i*26+6,14);g.closePath();g.fill();}
     // confetti
-    for(let i=0;i<60;i++){g.fillStyle=fc[i%5];
-      const cx=(i*47+ (now*30))%320, cy=(i*31+now*20)%118;g.fillRect(cx|0,cy|0,3,3);}
+    for(let i=0;i<50;i++){g.fillStyle=fc[i%5];
+      const cx=(i*47+ (now*30))%320, cy=(i*31+now*20)%96;g.fillRect(cx|0,cy|0,3,3);}
     // floating balloons with strings
     const bc=['#e0532e','#5b8def','#4fae3c','#ffd24a','#ef72a8','#a06ae0','#e08a2e'];
-    for(let i=0;i<7;i++){const bx=24+i*44+Math.sin(now+i)*3, by=34+ (i%2?6:0);
-      g.strokeStyle='rgba(120,120,120,.7)';g.beginPath();g.moveTo(bx,by+12);g.lineTo(bx,by+34);g.stroke();
+    for(let i=0;i<7;i++){const bx=24+i*44+Math.sin(now+i)*3, by=30+ (i%2?6:0);
+      g.strokeStyle='rgba(120,120,120,.7)';g.beginPath();g.moveTo(bx,by+12);g.lineTo(bx,by+30);g.stroke();
       g.fillStyle=bc[i];g.beginPath();g.ellipse(bx,by,8,11,0,0,7);g.fill();
       g.fillStyle='rgba(255,255,255,.4)';g.fillRect(bx-3,by-5,2,4);}
     // banner
-    g.fillStyle='#c0398f';g.fillRect(70,44,180,22);
-    g.fillStyle='#9c2d72';g.fillRect(70,62,180,4);
-    g.fillStyle='#fff';g.font='bold 15px Trebuchet MS';g.textAlign='center';g.textBaseline='middle';
-    g.fillText('GRATTIS OLIVIA!',160,55);
-    // table + cake
-    g.fillStyle='#9a6b3a';g.fillRect(124,96,72,22);
-    g.fillStyle='#fff0f5';g.fillRect(142,74,36,22);g.fillStyle='#ef72a8';g.fillRect(142,74,36,6);
-    g.fillStyle='#f6b5cf';g.fillRect(142,84,36,3);
-    for(let i=0;i<4;i++){g.fillStyle='#ffd24a';g.fillRect(148+i*8,64,2,10);
-      g.fillStyle='#e0532e';g.fillRect(148+i*8,60,2,4);}
-    // fem glada gäster ritade med spelets egna sprites
-    drawEndChar(g,'olivia',26,120);   // Olivia
-    drawEndChar(g,'girl',62,120);     // Wilma
-    drawEndChar(g,'girl',108,120);    // Alivia
-    drawEndChar(g,'granne',250,120);  // Stina
-    drawEndChar(g,'girl',286,120);    // Elisa
-    // white cat + horse joining the party
-    g.fillStyle='#f4f4f4';g.fillRect(92,110,12,7);g.fillRect(90,106,7,6);
-    g.fillStyle='#ffb6cf';g.fillRect(90,103,2,3);g.fillRect(94,103,2,3);
-    g.fillStyle='#dcc28c';g.fillRect(196,104,17,9);g.fillRect(210,96,7,10); // kropp+huvud
-    g.fillStyle='#39301c';g.fillRect(208,94,8,2);g.fillRect(196,104,17,1); // man + ryggstrimma
-    g.fillStyle='#efe3bf';g.fillRect(209,93,2,3);
-    g.fillStyle='#140d06';g.fillRect(214,99,1,1);
-    // hemlig gitarr-present från Pappa Lauri (om ryggsäcken återlämnades)
+    g.fillStyle='#c0398f';g.fillRect(64,40,192,22);
+    g.fillStyle='#9c2d72';g.fillRect(64,58,192,4);
+    g.fillStyle='#fff';g.font='bold 14px Trebuchet MS';g.textAlign='center';g.textBaseline='middle';
+    g.fillText('GRATTIS OLIVIA — RIDKALAS!',160,51);
+    // alla rider på hästar (ryttare = spelets egna sprites)
+    const horseCols=['#a9712e','#caa06a','#8a5a2b','#b98e5e','#9c6a3a'];
+    drawEndRider(g,'olivia',34,132,'#caa06a');  // Olivia
+    drawEndRider(g,'girl',86,132,horseCols[1]); // Wilma
+    drawEndRider(g,'granne',138,132,horseCols[2]); // Stina
+    drawEndRider(g,'girl',236,132,horseCols[3]); // Alivia
+    drawEndRider(g,'girl',286,132,horseCols[4]); // Elisa
+    // vita katten Nala sitter med Wilma
+    g.fillStyle='#f4f4f4';g.fillRect(96,108,10,6);g.fillRect(94,104,6,6);
+    g.fillStyle='#ffb6cf';g.fillRect(94,101,2,3);g.fillRect(98,101,2,3);
+    g.fillStyle='#2a6a3a';g.fillRect(95,106,1,1);g.fillRect(98,106,1,1);
+    // Pappa rider också, med den hemliga gitarren (om ryggsäcken återlämnades)
     if(quests.backpack==='done'){
-      drawEndChar(g,'boy',136,120); // Pappa Lauri
-      const gx=120,gy=104;
-      g.fillStyle='#b5651d';g.beginPath();g.ellipse(gx,gy,7,9,0,0,7);g.fill();
-      g.fillStyle='#8a4a12';g.beginPath();g.ellipse(gx,gy,4,6,0,0,7);g.fill();
-      g.fillStyle='#2a1a10';g.beginPath();g.arc(gx,gy,2.4,0,7);g.fill();
-      g.fillStyle='#7a4a23';g.fillRect(gx-1,gy-20,3,12);
-      g.fillStyle='#3a2613';g.fillRect(gx-2,gy-23,5,4);
-      g.fillStyle='#e8d0a0';for(let i=0;i<3;i++)g.fillRect(gx-1+i,gy-19,1,11);
+      drawEndRider(g,'boy',186,132,'#9c6a3a');
+      const gx=176,gy=120;
+      g.fillStyle='#b5651d';g.beginPath();g.ellipse(gx,gy,6,8,0,0,7);g.fill();
+      g.fillStyle='#2a1a10';g.beginPath();g.arc(gx,gy,2,0,7);g.fill();
+      g.fillStyle='#7a4a23';g.fillRect(gx-1,gy-16,2,9);
     }
   } else {
     // rain + sad
@@ -1163,7 +1204,7 @@ function drawEndScene(win){
     drawEndChar(g,'olivia',80,120,true);
     drawEndChar(g,'girl',160,120,true);
     drawEndChar(g,'granne',240,120,true);
-    g.fillStyle='#cfd';g.font='bold 13px Trebuchet MS';g.textAlign='center';g.fillText('Kalaset blev inställt...',160,142);
+    g.fillStyle='#cfd';g.font='bold 13px Trebuchet MS';g.textAlign='center';g.fillText('Ridkalaset blev inställt...',160,142);
   }
 }
 function drawMini(g,x,y,col,sad){
@@ -1175,7 +1216,7 @@ function drawMini(g,x,y,col,sad){
 }
 function winGame(){state='end';hide('hud');sfx('win');drawEndScene(true);
   document.getElementById('endTitle').textContent='🎉 Du klarade det på nivå '+DIFF[difficulty].label+'!';
-  document.getElementById('endText').textContent='Olivia hann hem med allt precis innan klockan slog 12! Huset fylldes av ballonger, tårta och glada vänner. Det blev stadens bästa födelsedagskalas! 🎉'+
+  document.getElementById('endText').textContent='Olivia hann hem med allt precis innan klockan slog 12! På ridskolan fylldes ridbanan av ballonger, tårta och glada vänner — och alla red runt på hästar! Det blev stadens bästa ridkalas! 🎉🐴'+
     (quests.backpack==='done'?' Pappa kom på kalaset och överraskade Olivia med sin hemliga present — en glittrande gitarr! 🎸':'')+
     (bonusMom?' Och Olivia kom själv på att köpa en blombukett till mamma — mamma blev överlycklig! 💐':'')+
     ' Du spelade på svårighetsgrad '+DIFF[difficulty].label+'.';
@@ -1208,7 +1249,7 @@ function winGame(){state='end';hide('hud');sfx('win');drawEndScene(true);
 function loseGame(){state='end';hide('hud');sfx('lose');drawEndScene(false);
   document.getElementById('endTitle').textContent='⏰ Klockan slog 12...';
   document.getElementById('endScore').innerHTML='';
-  document.getElementById('endText').textContent='Klockan slog 12 innan Olivia hann hem med allt. Kalaset hann inte bli klart och gästerna blev ledsna. Du saknade: '+(list.filter(i=>!i.got).map(i=>i.label).join(', ')||'inget')+'. Försök igen — du fixar det! 💪';
+  document.getElementById('endText').textContent='Klockan slog 12 innan Olivia hann hem med allt. Ridkalaset hann inte bli klart och gästerna blev ledsna. Du saknade: '+(list.filter(i=>!i.got).map(i=>i.label).join(', ')||'inget')+'. Försök igen — du fixar det! 💪';
   show('endView');}
 
 // ===================== MENU / INPUT =====================
