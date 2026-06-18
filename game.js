@@ -93,6 +93,13 @@ const PAL={
   girl:   pal('#c98a3a','#a06a22','#ef6a4a','#c84d33','#7a3f2a'),
   baker:  pal('#9a9a9a','#777777','#ececec','#c8c8c8','#666666'),
   host:   pal('#d04a8a','#a83468','#f0c040','#c89a20','#d04a4a'),
+  ludwig: pal(
+    '#d9b54a', // hår
+    '#b88f2e', // skuggat hår
+    '#3fa46d', // tröja
+    '#2c7d50', // mörkare tröja
+    '#4b6ed0'  // byxor
+  ),
 };
 
 function spr(mat,p,x,y,s,flip){
@@ -185,6 +192,8 @@ const scenes=[
       line:'Vilken god glass! 😋 Grattis Olivia, vi ses på ridkalaset!'},
      {x:22*TS,y:7*TS,pal:'granne',name:'Laura',dir:'up',
       line:'Vilka vackra smycken... 💍 Grattis Olivia! Din faster Laura kommer förstås på ridkalaset i kväll.'},
+     {x:21*TS,y:8*TS,pal:'ludwig',name:'Ludwig',dir:'up',
+      line:'Wow, vilka fina smycken! 💍 Jag hjälper Laura att välja en födelsedagspresent till Olivia. Vi ses på ridkalaset!'},
      {x:19*TS,y:9*TS,pal:'granne',name:'Stina',dir:'down',
       line:'Grattis Olivia! 🎉 Vilket mysigt torg, eller hur? Festklänningen finns i klädeståndet. Och glöm inte ballongerna i festbutiken längst bort! 🎈'} ] },
 
