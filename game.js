@@ -138,6 +138,10 @@ const shops={
    {id:'tarta',name:'Födelsedagstårta',price:40,listId:'tarta',col:'#f6b5cf'},
    {id:'godis',name:'Godispåsar',price:20,listId:'godis',col:'#e85a8a'},
    {id:'frukt',name:'Fruktkorg',price:15,col:'#e0532e'}]},
+ bageri:{name:'🥖 Bageriet',desc:'Nybakat doftar underbart! Rågbröd, baguette och krispiga munkkis.',items:[
+   {id:'ragbrod',name:'Rågbröd',price:18,repeat:true,col:'#7a4a2a'},
+   {id:'baguette',name:'Baguette',price:16,repeat:true,col:'#e8c07a'},
+   {id:'munkki',name:'Munkki',price:14,repeat:true,col:'#e0a83c'}]},
  leksak:{name:'🧸 Leksaksaffären',desc:'Allt för kalaset — och en färgglad piñata!',items:[
    {id:'present',name:'Piñata',price:30,listId:'present',col:'#3fa46d'},
    {id:'spel',name:'Tv-spel',price:35,col:'#3a3a55'},
@@ -160,6 +164,164 @@ const shops={
    {id:'serpentin',name:'Serpentiner',price:12,col:'#3fa46d'},
    {id:'ljus',name:'Tårtljus',price:8,col:'#f0c040'}]},
 };
+
+// ===================== VARU-IKONER (bilder på det som säljs i affärerna) =====================
+// små pixel-art-bilder ritade i samma platta stil som resten av spelet, cachade som data-URL:er
+const iconCv=document.createElement('canvas'); iconCv.width=64; iconCv.height=64;
+const ictx=iconCv.getContext('2d'); ictx.imageSmoothingEnabled=false;
+const iconCache={};
+function drawConeIcon(g,scoopCol){
+  g.fillStyle='#d8a05a';g.beginPath();g.moveTo(24,34);g.lineTo(40,34);g.lineTo(32,54);g.closePath();g.fill();
+  g.strokeStyle='rgba(0,0,0,.18)';g.lineWidth=1;
+  for(let i=0;i<3;i++){g.beginPath();g.moveTo(25+i*5,35);g.lineTo(30+i*5,52);g.stroke();}
+  g.fillStyle=scoopCol;g.beginPath();g.arc(32,25,12,0,7);g.fill();
+  g.fillStyle='rgba(255,255,255,.4)';g.beginPath();g.arc(27,20,3,0,7);g.fill();
+}
+function drawItemArt(g,id,col){
+  switch(id){
+    case 'klanning':
+      g.fillStyle=col;g.fillRect(26,14,12,14);
+      g.beginPath();g.moveTo(20,28);g.lineTo(44,28);g.lineTo(52,54);g.lineTo(12,54);g.closePath();g.fill();
+      g.fillStyle='#fff';g.fillRect(28,10,8,6);
+      g.fillStyle='rgba(255,255,255,.35)';g.fillRect(24,32,4,18);g.fillRect(36,32,4,18);
+      break;
+    case 'hatt':
+      g.fillStyle=col;g.beginPath();g.ellipse(32,46,22,7,0,0,7);g.fill();
+      g.beginPath();g.moveTo(32,14);g.lineTo(48,44);g.lineTo(16,44);g.closePath();g.fill();
+      g.fillStyle='#fff';g.fillRect(14,40,36,4);
+      g.fillStyle='#ffd24a';g.beginPath();g.arc(32,14,3,0,7);g.fill();
+      break;
+    case 'skor':
+      g.fillStyle=col;
+      [14,34].forEach(x=>{g.beginPath();g.moveTo(x,44);g.lineTo(x+22,44);g.lineTo(x+22,50);g.lineTo(x+4,50);
+        g.quadraticCurveTo(x-2,48,x,44);g.closePath();g.fill();});
+      g.fillStyle='rgba(255,255,255,.5)';[14,34].forEach(x=>g.fillRect(x+4,45,4,2));
+      break;
+    case 'tarta':
+      g.fillStyle='#fff';g.fillRect(16,36,32,14);
+      g.fillStyle=col;g.fillRect(16,26,32,10);
+      g.fillStyle='#fff';g.fillRect(16,24,32,4);
+      g.fillStyle='#e0532e';g.beginPath();g.arc(24,24,3,0,7);g.fill();g.beginPath();g.arc(40,24,3,0,7);g.fill();
+      g.fillStyle='#ffd24a';g.fillRect(30,12,3,12);
+      g.fillStyle='#ff8a3a';g.beginPath();g.moveTo(31.5,8);g.lineTo(28,14);g.lineTo(35,14);g.closePath();g.fill();
+      break;
+    case 'godis':
+      g.fillStyle=col;g.beginPath();g.moveTo(20,26);g.lineTo(44,26);g.lineTo(48,52);g.lineTo(16,52);g.closePath();g.fill();
+      g.strokeStyle='#5a3618';g.lineWidth=3;g.beginPath();g.moveTo(24,26);g.lineTo(20,16);g.moveTo(40,26);g.lineTo(44,16);g.stroke();
+      g.fillStyle='rgba(255,255,255,.5)';[[26,34],[36,40],[30,46]].forEach(p=>{g.beginPath();g.arc(p[0],p[1],3,0,7);g.fill();});
+      break;
+    case 'frukt':
+      g.fillStyle='#a9712e';g.fillRect(14,38,36,14);
+      g.strokeStyle='#7a4e1e';g.lineWidth=2;g.beginPath();g.arc(32,38,18,Math.PI,0);g.stroke();
+      g.fillStyle='#e0532e';g.beginPath();g.arc(24,32,7,0,7);g.fill();
+      g.fillStyle='#d8b020';g.beginPath();g.arc(38,30,7,0,7);g.fill();
+      g.fillStyle='#4fae3c';g.beginPath();g.arc(32,24,6,0,7);g.fill();
+      break;
+    case 'present':{
+      const stripeCols=['#ffd24a','#5b8def','#e0532e'];
+      g.fillStyle=col;g.beginPath();g.arc(32,32,18,0,7);g.fill();
+      for(let i=0;i<3;i++){g.fillStyle=stripeCols[i];g.beginPath();g.arc(32,32,18-i*5,0,7);g.fill();}
+      g.fillStyle='#3a2614';g.beginPath();g.arc(26,28,2,0,7);g.fill();g.beginPath();g.arc(38,28,2,0,7);g.fill();
+      g.strokeStyle='#3a2614';g.lineWidth=2;g.beginPath();g.arc(32,34,5,0,Math.PI);g.stroke();
+      break;}
+    case 'spel':
+      g.fillStyle=col;
+      g.beginPath();g.moveTo(14,30);g.lineTo(50,30);g.lineTo(50,42);g.quadraticCurveTo(50,50,42,50);g.lineTo(38,44);
+      g.lineTo(26,44);g.lineTo(22,50);g.quadraticCurveTo(14,50,14,42);g.closePath();g.fill();
+      g.fillStyle='#222';g.fillRect(20,34,2,6);g.fillRect(17,37,8,2);
+      g.fillStyle='#e0532e';g.beginPath();g.arc(42,34,3,0,7);g.fill();
+      g.fillStyle='#4fae3c';g.beginPath();g.arc(46,40,3,0,7);g.fill();
+      break;
+    case 'nalle':
+      g.fillStyle=col;
+      g.beginPath();g.arc(24,20,7,0,7);g.fill();g.beginPath();g.arc(40,20,7,0,7);g.fill();
+      g.beginPath();g.arc(32,28,13,0,7);g.fill();
+      g.beginPath();g.ellipse(32,48,15,12,0,0,7);g.fill();
+      g.fillStyle='#7a4e1e';g.beginPath();g.arc(28,26,2,0,7);g.fill();g.beginPath();g.arc(36,26,2,0,7);g.fill();
+      g.beginPath();g.arc(32,32,3,0,7);g.fill();
+      break;
+    case 'glass_jord': drawConeIcon(g,'#f6b5cf'); break;
+    case 'glass_chok': drawConeIcon(g,'#7a4a2a'); break;
+    case 'glass_vanilj': drawConeIcon(g,'#fff0b0'); break;
+    case 'bar':
+      ['#a83fd0','#e0532e','#5b8def'].forEach((c,i)=>{g.fillStyle=c;g.beginPath();g.arc(20+i*12,30+((i%2)*8),8,0,7);g.fill();});
+      g.fillStyle='#4fae3c';g.beginPath();g.moveTo(32,16);g.lineTo(24,10);g.lineTo(30,20);g.closePath();g.fill();
+      break;
+    case 'frukt2':
+      g.fillStyle='#e0532e';g.beginPath();g.arc(26,32,10,0,7);g.fill();
+      g.fillStyle='#d8b020';g.beginPath();g.arc(40,28,9,0,7);g.fill();
+      g.fillStyle='#4fae3c';g.fillRect(24,18,3,8);
+      break;
+    case 'blommor':{
+      g.fillStyle='#2e7d2e';g.fillRect(30,34,4,20);
+      const petalCols=['#ef72a8','#ffd24a','#5b8def','#a06ae0'];
+      [[22,28],[42,28],[32,20],[24,18],[40,18]].forEach((p,i)=>{
+        g.fillStyle=petalCols[i%petalCols.length];g.beginPath();g.arc(p[0],p[1],7,0,7);g.fill();
+        g.fillStyle='#ffe27a';g.beginPath();g.arc(p[0],p[1],2,0,7);g.fill();});
+      break;}
+    case 'krans':{
+      g.strokeStyle='#4fae3c';g.lineWidth=5;g.beginPath();g.arc(32,32,16,0,7);g.stroke();
+      const wcols=['#ef72a8','#ffd24a','#5b8def','#a06ae0','#ff8a3a'];
+      for(let i=0;i<8;i++){const a=i*Math.PI/4,x=32+Math.cos(a)*16,y=32+Math.sin(a)*16;
+        g.fillStyle=wcols[i%wcols.length];g.beginPath();g.arc(x,y,4,0,7);g.fill();}
+      break;}
+    case 'halsband':
+      g.strokeStyle=col;g.lineWidth=4;g.beginPath();g.arc(32,24,16,0.15*Math.PI,0.85*Math.PI);g.stroke();
+      g.fillStyle=col;g.beginPath();g.moveTo(28,38);g.lineTo(36,38);g.lineTo(32,52);g.closePath();g.fill();
+      g.fillStyle='rgba(255,255,255,.6)';g.beginPath();g.arc(31,42,2,0,7);g.fill();
+      break;
+    case 'armband':
+      g.strokeStyle=col;g.lineWidth=6;g.beginPath();g.arc(32,32,16,0,7);g.stroke();
+      for(let i=0;i<6;i++){const a=i*Math.PI/3;g.fillStyle='rgba(255,255,255,.55)';
+        g.beginPath();g.arc(32+Math.cos(a)*16,32+Math.sin(a)*16,2.5,0,7);g.fill();}
+      break;
+    case 'ballong':
+      ['#e0532e','#5b8def'].forEach((c,i)=>{const x=24+i*16,y=26;
+        g.strokeStyle='rgba(255,255,255,.5)';g.lineWidth=1;g.beginPath();g.moveTo(x,y+12);g.lineTo(x,y+30);g.stroke();
+        g.fillStyle=c;g.beginPath();g.ellipse(x,y,10,13,0,0,7);g.fill();
+        g.fillStyle='rgba(255,255,255,.35)';g.fillRect(x-4,y-6,3,5);});
+      break;
+    case 'serpentin':{
+      const scolsArr=['#e0532e','#5b8def','#4fae3c','#ffd24a'];
+      for(let i=0;i<4;i++){g.strokeStyle=scolsArr[i];g.lineWidth=4;g.beginPath();g.moveTo(14,18+i*4);
+        for(let t=0;t<=50;t+=5) g.lineTo(14+t,18+i*4+Math.sin(t/6+i)*8);
+        g.stroke();}
+      break;}
+    case 'ljus':
+      ['#e0532e','#5b8def','#4fae3c'].forEach((c,i)=>{const x=20+i*12;
+        g.fillStyle=c;g.fillRect(x,30,4,20);
+        g.fillStyle='#ff8a3a';g.beginPath();g.moveTo(x+2,20);g.lineTo(x-2,28);g.lineTo(x+6,28);g.closePath();g.fill();});
+      break;
+    case 'ragbrod':
+      g.fillStyle='#7a4a2a';g.beginPath();g.ellipse(32,34,20,12,0,0,7);g.fill();
+      g.fillStyle='#5a3618';for(let i=0;i<3;i++) g.fillRect(20+i*8,28,4,10);
+      g.fillStyle='rgba(255,255,255,.15)';g.beginPath();g.ellipse(26,26,8,4,0,0,7);g.fill();
+      break;
+    case 'baguette':
+      g.fillStyle='#e8c07a';
+      g.beginPath();g.moveTo(12,40);g.quadraticCurveTo(32,20,52,40);g.quadraticCurveTo(32,48,12,40);g.closePath();g.fill();
+      g.strokeStyle='#b5813a';g.lineWidth=2;
+      for(let i=0;i<4;i++){g.beginPath();g.moveTo(18+i*8,32);g.lineTo(22+i*8,40);g.stroke();}
+      break;
+    case 'munkki':
+      g.fillStyle='#e0a83c';g.beginPath();g.arc(32,32,16,0,7);g.fill();
+      g.fillStyle='#c0504a';g.beginPath();g.arc(32,32,13,0,7);g.fill();
+      g.save();g.globalCompositeOperation='destination-out';g.beginPath();g.arc(32,32,5,0,7);g.fill();g.restore();
+      g.fillStyle='rgba(255,255,255,.6)';
+      [[24,24],[40,26],[28,40],[38,38]].forEach(p=>{g.beginPath();g.arc(p[0],p[1],2,0,7);g.fill();});
+      break;
+    default:
+      g.fillStyle=col||'#caa11e';g.beginPath();g.roundRect?g.roundRect(14,14,36,36,8):g.fillRect(14,14,36,36);g.fill();
+  }
+}
+function itemIconURL(it){
+  if(iconCache[it.id]) return iconCache[it.id];
+  ictx.clearRect(0,0,64,64);
+  drawItemArt(ictx,it.id,it.col);
+  const url=iconCv.toDataURL();
+  iconCache[it.id]=url;
+  return url;
+}
 
 // Scene definitions
 const scenes=[
@@ -187,20 +349,20 @@ const scenes=[
      {x:10*TS,y:13*TS,pal:'keeper',name:'Glassförsäljaren',dir:'down',
       line:'Smaka på min hemgjorda glass! 🍦 Bara 30 mynt — unna dig något gott på torget!'},
      {x:8*TS,y:11*TS,pal:'boy',name:'Sampo',dir:'right',holdingIce:true,
-      line:'Mmm, glassen här är ljuvlig! 🍦 Grattis på födelsedagen, Olivia — din farbror Sampo ses på ridkalaset i kväll!'},
+      line:'Mmm, glassen här är ljuvlig! 🍦 Grattis på födelsedagen, Olivia — jag, farbror Sampo ses på ridkalaset i kväll!'},
      {x:16*TS,y:12*TS,pal:'girl',name:'Hanna',dir:'left',holdingIce:true,
       line:'Vilken god glass! 😋 Grattis Olivia, vi ses på ridkalaset!'},
      {x:22*TS,y:7*TS,pal:'granne',name:'Laura',dir:'up',
-      line:'Vilka vackra smycken... 💍 Grattis Olivia! Din faster Laura kommer förstås på ridkalaset i kväll.'},
+      line:'Vilka vackra smycken... 💍 Grattis Olivia! Jag, faster Laura kommer förstås på ridkalaset i kväll.'},
      {x:21*TS,y:8*TS,pal:'ludwig',name:'Ludwig',dir:'up',
-      line:'Wow, vilka fina smycken! 💍 Jag hjälper Laura att välja en födelsedagspresent till Olivia. Vi ses på ridkalaset!'},
+      line:'Wow, vilka fina smycken! 💍 Jag hjälper Laura att välja en födelsedagspresent. Vi ses på ridkalaset!'},
      {x:19*TS,y:9*TS,pal:'granne',name:'Stina',dir:'down',
       line:'Grattis Olivia! 🎉 Vilket mysigt torg, eller hur? Festklänningen finns i klädeståndet. Och glöm inte ballongerna i festbutiken längst bort! 🎈'} ] },
 
  { name:'Marknadsgatan', seed:37, grass1:'#7bb44a',grass2:'#6fa83f',path:'#d2b074',flower:'#e0532e',terrain:'market',
    houses:[
      {tx:4,ty:2,tw:5,th:4,wall:'#f3d79a',roof:'#e8920c',name:'Mataffär',shop:'mat'},
-     {tx:16,ty:2,tw:4,th:3,wall:'#e8c8a0',roof:'#a8651c',name:'Bageri'} ],
+     {tx:16,ty:2,tw:4,th:3,wall:'#e8c8a0',roof:'#a8651c',name:'Bageri',shop:'bageri'} ],
    npcs:[
      {x:11*TS,y:8*TS,pal:'baker',name:'Bagaren',dir:'down',
       line:'Doften av nybakat! Tårtan i mataffären är världens godaste. Missa inte godispåsarna heller!'},
@@ -216,7 +378,7 @@ const scenes=[
      {x:9*TS,y:9*TS,pal:'girl',name:'Alivia',dir:'right',
       line:'Grattis Olivia! 🪅 Leksaksaffären har de finaste piñatorna. En sådan får inte saknas på ditt kalas!'},
      {x:13*TS,y:5*TS,pal:'keeper',name:'Trädgårdsvakten',dir:'down',
-      line:'Bakom grinden där uppe ligger Бабушка och Дедушкаs datcha — full med bonuspoäng! Men jag tappade min nyckel borta vid Festtorget...'} ] },
+      line:'Bakom grinden där uppe ligger Svetlana och Jevgenis datcha — full med bonuspoäng! Men jag tappade min nyckel borta vid Festtorget...'} ] },
 
  { name:'Festtorget', seed:71, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b2d0',flower:'#ffd24a',terrain:'festival',
    fixedTrees:[{c:13,r:6}],
@@ -229,15 +391,15 @@ const scenes=[
      {x:18*TS,y:11*TS,pal:'boy',name:'Pappa',dir:'left',
       line:'Åh nej, jag har tappat min ryggsäck på Marknadsgatan! 🎒 Det ligger något viktigt i den. Hittar du den får du 25 mynt — och då kan jag komma på ditt kalas!'} ] },
 
- { name:'Бабушка & Дедушка', seed:90, grass1:'#6db86a',grass2:'#5fa85e',path:'#cdb27a',flower:'#ff7ec0',terrain:'garden',
+ { name:'Svetlana och Jevgeni', seed:90, grass1:'#6db86a',grass2:'#5fa85e',path:'#cdb27a',flower:'#ff7ec0',terrain:'garden',
    bonus:true, stalls:[], noPath:true,
    houses:[{tx:1,ty:2,tw:4,th:4,wall:'#e3c08a',roof:'#9c5a2a',name:'Дача'}],
    greenhouse:{tx:11,ty:2,tw:4,th:3},
    fields:[{tx:6,ty:3,tw:4,th:2,kind:'carrot'},{tx:16,ty:3,tw:4,th:2,kind:'potato'}],
    npcs:[
-     {x:8*TS,y:9*TS,pal:'granne',name:'Бабушка',dir:'down',bonus:true,
+     {x:8*TS,y:9*TS,pal:'granne',name:'Svetlana',dir:'down',bonus:true,
       line:'Privet, Olivia! Grattis på födelsedagen! Välkommen till vår datcha med växthus och grönsaksland. Vi ser så fram emot ditt kalas!'},
-     {x:15*TS,y:10*TS,pal:'keeper',name:'Дедушка',dir:'down',mustache:true,
+     {x:15*TS,y:10*TS,pal:'keeper',name:'Jevgeni',dir:'down',mustache:true,
       line:'Grattis, lilla vän! Ta gärna lite potatis och morötter från landet. Vi ses på ridkalaset!'} ] },
 
   { name:'Kikka & Jorma', seed:91, grass1:'#6cae52',grass2:'#5fa047',path:'#c8b08a',flower:'#ffd24a',terrain:'garden',
@@ -258,6 +420,20 @@ scenes[4].exits={left:3};
 scenes[5].exits={down:3};
 scenes[6].exits={up:1};
 
+// generisk gå-runt-vy för hus utan affär (kök, sovrum, vardagsrum med bokhylla — ingen TV)
+const HOME_SCENE=scenes.length;
+scenes.push({
+  name:'Hemma', seed:5, terrain:'indoor', isInterior:true, noPath:true,
+  houses:[], npcs:[], stalls:[],
+  furniture:[
+    {kind:'kitchen',tx:2, ty:2,tw:6,th:2},
+    {kind:'shelf',  tx:10,ty:2,tw:5,th:2},
+    {kind:'bed',    tx:17,ty:2,tw:6,th:2},
+  ],
+  doorCols:[11,12,13],
+  exitDoor:{x:12.5*TS, y:(ROWS-1)*TS+2},
+});
+
 // build terrain + collision per scene (cached)
 const built=[];
 function buildScene(i){
@@ -266,8 +442,16 @@ function buildScene(i){
   const grid=[]; const blocked=[]; const trees=[]; const flowers=[]; const bushes=[];
   const R=rnd(sc.seed);
   for(let r=0;r<ROWS;r++){grid[r]=[];blocked[r]=[];for(let c=0;c<COLS;c++){grid[r][c]='G';blocked[r][c]=false;}}
+  // hemma-vy: trägolv istället för gräs (så inga träd/blommor/buskar hamnar där av misstag)
+  if(sc.isInterior){ for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) grid[r][c]='F'; }
   // horizontal walking path (street) — kan stängas av per scen
   if(!sc.noPath) for(let c=0;c<COLS;c++){grid[9][c]='P';grid[10][c]='P';}
+  // vägspärren blockerar även fysiskt (samma ställe som den ritade bommen) — man kan inte gå igenom den
+  if(!sc.noPath){
+    const exC=sc.exits||{};
+    if(exC.left==null){ blocked[9][0]=true; blocked[10][0]=true; }
+    if(exC.right==null){ blocked[9][COLS-1]=true; blocked[10][COLS-1]=true; }
+  }
   // pond
   if(sc.pond){const p=sc.pond;for(let r=p.ty;r<p.ty+p.th;r++)for(let c=p.tx;c<p.tx+p.tw;c++){if(r<ROWS&&c<COLS){grid[r][c]='W';blocked[r][c]=true;}}}
   // plaza stone area for town
@@ -287,6 +471,18 @@ function buildScene(i){
   if(sc.fountain){const f=sc.fountain;for(let r=f.ty;r<f.ty+f.th;r++)for(let c=f.tx;c<f.tx+f.tw;c++){if(r<ROWS&&c<COLS)blocked[r][c]=true;}}
   // greenhouse blocked
   if(sc.greenhouse){const g=sc.greenhouse;for(let r=g.ty;r<g.ty+g.th;r++)for(let c=g.tx;c<g.tx+g.tw;c++){if(r<ROWS&&c<COLS)blocked[r][c]=true;}}
+  // hemma-vy: väggar runt om, dörröppning längst ner, möbler blockerar
+  if(sc.isInterior){
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+      if(r===0||r===ROWS-1||c===0||c===COLS-1) blocked[r][c]=true;
+    }
+    (sc.doorCols||[]).forEach(c=>{ if(c>=0&&c<COLS) blocked[ROWS-1][c]=false; });
+    (sc.furniture||[]).forEach(fu=>{
+      for(let r=fu.ty;r<fu.ty+fu.th;r++)for(let c=fu.tx;c<fu.tx+fu.tw;c++){
+        if(r>=0&&r<ROWS&&c>=0&&c<COLS) blocked[r][c]=true;
+      }
+    });
+  }
   // trees: border line top + scattered
   function addTree(c,r){ if(r<0||r>=ROWS||c<0||c>=COLS)return; if(grid[r][c]!=='G')return; if(!sc.noPath&&r>=9&&r<=10)return;
     blocked[r][c]=true; trees.push({c,r}); }
@@ -337,6 +533,10 @@ function drawTile(code,sc,c,r){
     const o=Math.sin(now*2+c+r)*4;
     ctx.fillRect(x+4,y+8+o,12,3); ctx.fillRect(x+16,y+20-o,10,3);
     ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(x+6,y+9+o,5,1);
+  } else if(code==='F'){
+    ctx.fillStyle=((c+r)&1)?'#caa06a':'#c0955c'; ctx.fillRect(x,y,TS,TS);
+    ctx.fillStyle='rgba(0,0,0,.10)'; ctx.fillRect(x,y+TS-3,TS,3);
+    ctx.fillStyle='rgba(255,255,255,.06)'; ctx.fillRect(x,y,TS,2);
   }
 }
 
@@ -513,6 +713,36 @@ function drawGate(open){
     ctx.fillStyle='#caa11e';ctx.beginPath();ctx.arc(12.5*TS,gy,3,0,7);ctx.fill();
   }
 }
+// vägspärr som visar tydligt var vägen tar slut (inga fler platser åt det hållet) —
+// en rödvitrandig bom på trästöttor, tvärs över hela vägbredden, så ingen kan fortsätta den vägen
+function drawRoadBlock(atRight){
+  const x= atRight ? (W-20) : 20;
+  const topY=9*TS-2, botY=11*TS+2, barH=botY-topY; // täcker hela vägens bredd (båda vägraderna)
+  // trästöttor (bock), samma träfärg som stans övriga staket/skyltar
+  ctx.fillStyle='#7a5230';
+  ctx.fillRect(x-13,topY+6,5,barH-6);ctx.fillRect(x+8,topY+6,5,barH-6);
+  ctx.fillStyle='#5a3618';ctx.fillRect(x-13,botY-8,5,8);ctx.fillRect(x+8,botY-8,5,8);
+  // markskugga precis vid stöttornas fötter (bommen står på marken, svävar inte)
+  ctx.fillStyle='rgba(0,0,0,.25)';
+  ctx.beginPath();ctx.ellipse(x-10,botY+2,6,3,0,0,7);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+10,botY+2,6,3,0,0,7);ctx.fill();
+  // rödvitrandig barriärbräda, tvärs över hela vägbredden
+  const bw=16, bx=x-bw/2, stripeH=11;
+  let i=0;
+  for(let sy=topY; sy<botY; sy+=stripeH,i++){
+    ctx.fillStyle=(i%2===0)?'#e0532e':'#f3ece0';
+    ctx.fillRect(bx, sy, bw, Math.min(stripeH, botY-sy));
+  }
+  ctx.strokeStyle='#3a2614';ctx.lineWidth=2;ctx.strokeRect(bx,topY,bw,barH);
+  ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(bx+2,topY+2,3,barH-4);
+  // varningsskylt ovanpå bommen
+  const signY=topY-2;
+  ctx.fillStyle='#ffd24a';ctx.beginPath();
+  ctx.moveTo(x,signY-16);ctx.lineTo(x-10,signY-2);ctx.lineTo(x+10,signY-2);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#3a2614';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle='#2a1a10';ctx.font='bold 12px Trebuchet MS';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('!',x,signY-8);
+}
 function drawGreenhouse(gh){
   const x=gh.tx*TS,y=gh.ty*TS,w=gh.tw*TS,hh=gh.th*TS,base=y+hh*0.32;
   ctx.fillStyle='#cfe8ea';ctx.fillRect(x,base,w,y+hh-base);
@@ -613,6 +843,71 @@ function drawHouse(h){
   ctx.fillText(h.name, x+w/2, wallTop-10);
 }
 
+// ===================== HEMMA-VY (gå-runt-rum för hus utan affär) =====================
+// bakvägg + sidoväggar, målade i husets egna färger så det känns som "samma hus" utifrån och in
+function drawInteriorBackdrop(hc){
+  hc = hc||{wall:'#e7c08a',roof:'#c0392b'};
+  ctx.fillStyle=hc.wall;ctx.fillRect(0,0,W,78);
+  ctx.fillStyle=hc.roof;ctx.fillRect(0,0,W,8);
+  ctx.fillStyle='rgba(0,0,0,.10)';ctx.fillRect(0,74,W,4);
+  ctx.fillStyle=hc.wall;ctx.fillRect(0,0,16,H);ctx.fillRect(W-16,0,16,H);
+  ctx.fillStyle='rgba(0,0,0,.10)';ctx.fillRect(12,0,4,H);ctx.fillRect(W-16,0,4,H);
+}
+// dörröppningen längst ner (samma stil som husens dörrar utomhus)
+function drawInteriorDoor(sc){
+  const gy=(ROWS-1)*TS;
+  const c0=Math.min.apply(null,sc.doorCols), c1=Math.max.apply(null,sc.doorCols);
+  ctx.fillStyle='#5a3618';ctx.fillRect(c0*TS-6,gy-4,6,TS+4);ctx.fillRect((c1+1)*TS,gy-4,6,TS+4);
+  ctx.fillStyle='rgba(255,236,180,.35)';ctx.fillRect(c0*TS,gy-2,(c1-c0+1)*TS,TS+2);
+  ctx.font='bold 20px Trebuchet MS';ctx.fillStyle='rgba(255,255,255,.9)';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('▼',(c0+c1+1)/2*TS,H-12);
+}
+function drawFurniture(fu,hc){
+  const x=fu.tx*TS, y=fu.ty*TS, w=fu.tw*TS, hh=fu.th*TS;
+  if(fu.kind==='kitchen') drawKitchenFurniture(x,y,w,hh);
+  else if(fu.kind==='shelf') drawShelfFurniture(x,y,w,hh);
+  else if(fu.kind==='bed') drawBedFurniture(x,y,w,hh,hc);
+}
+function drawKitchenFurniture(x,y,w,hh){
+  const cy=y+hh; // golvlinjen där möbelblocket slutar
+  ctx.fillStyle='#8a5a2b';ctx.fillRect(x,cy-30,w,30); // bänk
+  ctx.fillStyle='#a9712e';ctx.fillRect(x,cy-30,w,7);
+  ctx.fillStyle='#6b4423';
+  const doors=Math.floor(w/26);
+  for(let i=0;i<doors;i++) ctx.fillRect(x+6+i*26,cy-20,18,16); // skåpluckor
+  ctx.fillStyle='#5a3618';for(let i=0;i<doors;i++) ctx.fillRect(x+6+i*26+13,cy-13,3,5); // handtag
+  ctx.fillStyle='#c9c9c9';ctx.fillRect(x+w-40,cy-34,26,8); // diskho
+  ctx.fillStyle='#9a9a9a';ctx.fillRect(x+w-38,cy-32,22,4);
+  ctx.fillStyle='#3a3a3a';ctx.fillRect(x+8,cy-38,26,10); // spis
+  ctx.fillStyle='#c0504a';ctx.fillRect(x+11,cy-36,5,5);ctx.fillRect(x+22,cy-36,5,5);
+  ctx.fillStyle='#8a8a8a';ctx.fillRect(x+12,cy-46,14,9);ctx.fillStyle='#6a6a6a';ctx.fillRect(x+12,cy-46,14,3); // kastrull
+}
+function drawShelfFurniture(x,y,w,hh){
+  ctx.fillStyle='#6b4423';ctx.fillRect(x,y,w,hh);
+  ctx.fillStyle='#5a3618';ctx.fillRect(x,y,w,6);
+  const shelfCols=['#c0504a','#5b8def','#4fae3c','#ffd24a','#a06ae0','#e0532e'];
+  const rowsN=Math.max(2,Math.floor(hh/22));
+  for(let s=0;s<rowsN;s++){
+    const sy=y+8+s*Math.floor((hh-12)/rowsN);
+    ctx.fillStyle='#5a3618';ctx.fillRect(x+3,sy+15,w-6,2);
+    let bxo=x+5;
+    for(let k=0;k<10;k++){ if(bxo>x+w-8)break;
+      const bw2=4+((s*5+k)%3);
+      ctx.fillStyle=shelfCols[(s+k)%shelfCols.length];ctx.fillRect(bxo,sy,bw2,14);bxo+=bw2+1;}
+  }
+}
+function drawBedFurniture(x,y,w,hh,hc){
+  const cy=y+hh;
+  const blanket= (hc&&hc.roof)?hc.roof:'#5b8def';
+  ctx.fillStyle='#8a5a2b';ctx.fillRect(x+6,cy-6,w-12,6); // fotände
+  ctx.fillStyle='#efe3d0';ctx.fillRect(x+6,cy-30,w-12,26); // madrass
+  ctx.fillStyle=blanket;ctx.fillRect(x+6,cy-20,w-12,16); // täcke
+  ctx.fillStyle='#fff';ctx.fillRect(x+10,cy-30,26,11);ctx.fillStyle='#f0e6d0';ctx.fillRect(x+13,cy-28,20,7); // kudde
+  ctx.fillStyle='#8a5a2b';ctx.fillRect(x+4,cy-34,7,34);ctx.fillRect(x+w-11,cy-34,7,34); // sängstolpar
+  ctx.fillStyle='#6b4423';ctx.fillRect(x+w-6,cy-18,14,14); // nattduksbord
+  ctx.fillStyle='#ffd86b';ctx.beginPath();ctx.moveTo(x+w+1,cy-30);ctx.lineTo(x+w+13,cy-30);ctx.lineTo(x+w+10,cy-22);ctx.lineTo(x+w+4,cy-22);ctx.closePath();ctx.fill(); // lampskärm
+}
+
 // ===================== RENDER =====================
 function draw(){
   const sc=scenes[sceneIndex];
@@ -625,6 +920,14 @@ function draw(){
   (sc.fields||[]).forEach(drawField); // potatis-/morotsland
   if(sc.meadow) drawMeadow(sc.meadow.cx,sc.meadow.cy);   // blomäng i hörnet
   if(sc.picnic) drawBlanket(sc.picnic.cx,sc.picnic.cy);  // picknickfilt
+  // vägspärr där vägen tar slut (ingen fler scen åt det hållet)
+  if(!sc.noPath){
+    const exB=sc.exits||{};
+    if(exB.left==null) drawRoadBlock(false);
+    if(exB.right==null) drawRoadBlock(true);
+  }
+  // hemma-vy: målad bakvägg + dörröppning
+  if(sc.isInterior){ drawInteriorBackdrop(currentHomeHouse); drawInteriorDoor(sc); }
   // world coins
   (worldCoins[sceneIndex]||[]).forEach((co,idx)=>{ if(coinsTaken[sceneIndex+'_'+idx])return;
     drawCoin(co.c*TS+TS/2,co.r*TS+TS/2);});
@@ -652,6 +955,7 @@ function draw(){
   if(sc.greenhouse)ents.push({y:(sc.greenhouse.ty+sc.greenhouse.th)*TS,draw:()=>drawGreenhouse(sc.greenhouse)});
   (sc.stalls||[]).forEach(st=>ents.push({y:st.cy,draw:()=>drawStall(st)}));
   sc.houses.forEach(h=>ents.push({y:(h.ty+h.th)*TS,draw:()=>drawHouse(h)}));
+  (sc.furniture||[]).forEach(fu=>ents.push({y:(fu.ty+fu.th)*TS,draw:()=>drawFurniture(fu,currentHomeHouse)}));
   B.trees.forEach(t=>ents.push({y:(t.r+1)*TS,draw:()=>drawTree(t.c,t.r)}));
   sc.npcs.forEach(n=>ents.push({y:n.y,draw:()=>{
     if(n.hammock){ drawTreePx(n.x-TS/2,n.y-54-TS/2); drawTreePx(n.x-TS/2,n.y+48-TS/2); drawHammockCloth(n.x,n.y); }
@@ -689,7 +993,7 @@ function draw(){
   // NPC name tags
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 11px Trebuchet MS';
   sc.npcs.forEach(n=>{
-    ctx.fillStyle='rgba(20,12,40,.7)';const tw=n.name.length*6+10;
+    ctx.fillStyle='rgba(20,12,40,.7)';const tw=ctx.measureText(n.name).width+14;
     ctx.fillRect(n.x-tw/2,n.y-58,tw,14);
     ctx.fillStyle='#fff';ctx.fillText(n.name,n.x,n.y-51);
   });
@@ -701,7 +1005,7 @@ function draw(){
 
   // scene banner + arrows
   const ex=sc.exits||{};
-  const label=sc.bonus?'★ Bonusrum':'('+(sceneIndex+1)+'/5)';
+  const label=sc.isInterior?'🏠':(sc.bonus?'★ Bonusrum':'('+(sceneIndex+1)+'/5)');
   ctx.fillStyle='rgba(20,12,40,.7)';ctx.fillRect(W/2-120,34,240,24);
   ctx.fillStyle='#fff';ctx.font='bold 14px Trebuchet MS';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText('📍 '+sc.name+'  '+label,W/2,46);
@@ -778,9 +1082,12 @@ function update(dt){
   // interaction detection
   interactTarget=null;let best=1e9;
   const sc=scenes[sceneIndex];
-  sc.houses.forEach(h=>{ if(!h.shop)return;
+  sc.houses.forEach(h=>{
     const d=Math.hypot(player.x-h.doorX,player.y-h.doorY);
-    if(d<46&&d<best){best=d;interactTarget={type:'shop',key:h.shop,name:h.name};}});
+    if(d<46&&d<best){best=d;interactTarget= h.shop?{type:'shop',key:h.shop,name:h.name}:{type:'house',house:h};}});
+  if(sc.isInterior && sc.exitDoor){
+    const d=Math.hypot(player.x-sc.exitDoor.x,player.y-sc.exitDoor.y);
+    if(d<50&&d<best){best=d;interactTarget={type:'exitHome'};}}
   (sc.stalls||[]).forEach(st=>{
     const d=Math.hypot(player.x-st.cx,player.y-st.cy);
     if(d<56&&d<best){best=d;interactTarget={type:'shop',key:st.shop,name:st.name};}});
@@ -820,6 +1127,8 @@ function update(dt){
   const hint=document.getElementById('hint');
   if(interactTarget){hint.style.display='block';
     hint.textContent= interactTarget.type==='shop'?('⭐ Mellanslag: handla i '+interactTarget.name)
+      :interactTarget.type==='house'?('⭐ Mellanslag: gå in i '+interactTarget.house.name)
+      :interactTarget.type==='exitHome'?'⭐ Mellanslag: gå ut'
       :interactTarget.type==='zorro'?'⭐ Mellanslag: klappa Zorro 😻'
       :interactTarget.type==='cat'?(quests.zorro==='carry'&&quests.cat==='active'?'⭐ Mellanslag: ställ ner Zorro hos Nala':quests.zorro==='friends'?'⭐ Mellanslag: ta med båda katterna':'⭐ Mellanslag: klappa katten 🐱')
       :interactTarget.type==='horse'?'⭐ Mellanslag: fånga hästen 🐴'
@@ -850,6 +1159,8 @@ function handleAction(){
   if(state==='dialog'){closeDialog();return;}
   if(state!=='play'||!interactTarget)return;
   if(interactTarget.type==='shop'){openShop(interactTarget.key);return;}
+  if(interactTarget.type==='house'){enterHome(interactTarget.house);return;}
+  if(interactTarget.type==='exitHome'){leaveHome();return;}
   if(interactTarget.type==='zorro'){
     quests.zorro='carry';sfx('quest');openDialog('Zorro 😻','Zorro (en mörkgrå-vit devon rex) spinner och gnider sig mot dig — han älskar Olivia! Han hoppar upp i din famn. Kanske vill han träffa en kompis?');
     return;
@@ -891,7 +1202,7 @@ function questTalk(n){
     else if(quests.cat==='found'){quests.cat='done';addCoins(30);
       if(quests.zorro==='carry2'){quests.zorro='done';bonusPoints+=400;sfx('quest');
         openDialog(n.name,'NALA! 😺 *kramar katten och torkar tårarna* Och titta — hon har blivit bästa vän med Zorro! 🐈‍⬛💕 Tack snälla Olivia, du räddade min dag DUBBELT! Här är 30 mynt och extra bonuspoäng. Nu ser jag SÅ mycket fram emot att få rida på ditt ridkalas i kväll!! 🐴💖');}
-      else openDialog(n.name,'NALA! 😺 *kramar katten och torkar tårarna* Tack snälla Olivia, du räddade min dag! Här är 30 mynt. Och nu ser jag SÅ mycket fram emot att få rida på ditt ridkalas i kväll!! 🐴💖');}
+      else openDialog(n.name,'NALA! 😺 *kramar katten och torkar tårarna* Tack snälla Olivia, du räddade min dag! Här är 30 mynt. Och nu ser jag SÅ mycket fram emot att få rida på ridkalaset i kväll!! 🐴💖');}
     else openDialog(n.name,'Tack igen för att du hittade Nala! 😺 Jag längtar verkligen till att få rida på ridkalaset! 🐴');
     return;
   }
@@ -950,7 +1261,8 @@ function openShop(key){curShop=shops[key];state='shop';
 function renderShop(){const box=document.getElementById('shopItems');box.innerHTML='';
   curShop.items.forEach(it=>{const row=document.createElement('div');row.className='shopItem';
     const own=owned[it.id];
-    row.innerHTML='<div class="info"><span class="swatch" style="background:'+it.col+'"></span><b>'+it.name+'</b>'+
+    const icon=itemIconURL(it);
+    row.innerHTML='<div class="info"><span class="swatch" style="background:'+it.col+' url('+icon+') center/26px 26px no-repeat"></span><b>'+it.name+'</b>'+
       (it.listId?' <span style="color:#ffd86b">★ på listan</span>':'')+
       '<div style="font-size:13px;opacity:.8">💰 '+it.price+' mynt</div></div>';
     const btn=document.createElement('button');btn.className='buyBtn'+(own?' owned':'');
@@ -972,6 +1284,24 @@ function buy(it){if(!it.repeat&&owned[it.id])return;
     setTimeout(()=>openDialog('💡 Tips','Du har allt på listan! Spring hem till mamma (åt vänster, plats 1) innan tiden tar slut! 🏠'),250);}}
 function closeShop(){hide('shop');state='play';
   const m=document.getElementById('shopMsg');if(m){m.style.display='none';m.textContent='';m.className='';}}
+// gå in i ett hus utan affär: byt till den delade gå-runt hemma-vyn, tema:d med husets egna färger
+let homeReturn=null, currentHomeHouse=null;
+function enterHome(house){
+  homeReturn={scene:sceneIndex,x:player.x,y:player.y-26};
+  currentHomeHouse=house;
+  scenes[HOME_SCENE].name=house.name;
+  sceneIndex=HOME_SCENE; buildScene(HOME_SCENE);
+  const dc=scenes[HOME_SCENE].doorCols, midC=(Math.min.apply(null,dc)+Math.max.apply(null,dc)+1)/2;
+  player.x=midC*TS; player.y=(ROWS-1)*TS-6; player.dir='up';
+  ensureFree();
+}
+function leaveHome(){
+  if(!homeReturn)return;
+  sceneIndex=homeReturn.scene;
+  player.x=homeReturn.x; player.y=homeReturn.y; player.dir='down';
+  ensureFree();
+  homeReturn=null; currentHomeHouse=null;
+}
 function renderList(){const c=document.getElementById('listItems');c.innerHTML='';
   list.forEach(i=>{const d=document.createElement('div');d.className=i.got?'li-done':'';
     d.textContent=(i.got?'✅ ':'⬜ ')+i.label;c.appendChild(d);});}
@@ -1124,7 +1454,7 @@ if(isTouch){document.getElementById('touch').style.display='block';document.body
 // ---- bakgrundsmusik ----
 const bgm=document.getElementById('bgm');bgm.volume=0.5;
 // hitta musikfilen även om den döpts om (mellanslag/stora bokstäver) på GitHub
-const bgmCandidates=['pixel-pathfinder.mp3','Pixel%20Pathfinder.mp3','pixel%20pathfinder.mp3','music.mp3'];
+const bgmCandidates=['Pixel Pathfinder.mp3','pixel-pathfinder.mp3','Pixel%20Pathfinder.mp3','pixel%20pathfinder.mp3','music.mp3'];
 let bgmIdx=0;
 bgm.addEventListener('error',()=>{bgmIdx++;if(bgmIdx<bgmCandidates.length){bgm.src=bgmCandidates[bgmIdx];bgm.load();if(musicOn)bgm.play().catch(()=>{});}});
 let musicOn=true;
@@ -1180,6 +1510,7 @@ function startGame(){hide('menu');show('hud');state='play';
   quests.cat='none';quests.bread='none';quests.horse='none';
   quests.letter='none';quests.backpack='none';quests.gateKey='none';quests.gate='closed';quests.zorro='home';
   coinPickups=0;bonusMom=false;bonusPoints=0;ridingTalk=false;horseEatTimer=0;
+  homeReturn=null;currentHomeHouse=null;
   scenes.forEach(s=>s.npcs.forEach(n=>{n._claimed=false;}));
   for(const k in coinsTaken)delete coinsTaken[k];
   document.getElementById('coins').textContent=coins;renderList();
